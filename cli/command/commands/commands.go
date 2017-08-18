@@ -7,7 +7,6 @@ import (
 	"github.com/docker/cli/cli/command/container"
 	"github.com/docker/cli/cli/command/image"
 	"github.com/docker/cli/cli/command/network"
-	"github.com/docker/cli/cli/command/plugin"
 	"github.com/docker/cli/cli/command/registry"
 	"github.com/docker/cli/cli/command/system"
 	"github.com/docker/cli/cli/command/volume"
@@ -27,9 +26,6 @@ func AddCommands(cmd *cobra.Command, dockerCli *command.DockerCli) {
 
 		// network
 		network.NewNetworkCommand(dockerCli),
-
-		// plugin
-		plugin.NewPluginCommand(dockerCli),
 
 		// registry
 		registry.NewLoginCommand(dockerCli),
