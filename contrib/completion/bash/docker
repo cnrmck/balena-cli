@@ -9,7 +9,7 @@
 # You can find more details for each warning at the following page: 
 #    https://github.com/koalaman/shellcheck/wiki/<SCXXXX>
 #
-# bash completion file for core docker commands
+# bash completion file for core balena commands
 #
 # This script provides completion of:
 #  - commands and their options
@@ -20,22 +20,22 @@
 # To enable the completions either:
 #  - place this file in /etc/bash_completion.d
 #  or
-#  - copy this file to e.g. ~/.docker-completion.sh and add the line
+#  - copy this file to e.g. ~/.balena-completion.sh and add the line
 #    below to your .bashrc after bash completion features are loaded
-#    . ~/.docker-completion.sh
+#    . ~/.balena-completion.sh
 #
 # Configuration:
 #
 # For several commands, the amount of completions can be configured by
 # setting environment variables.
 #
-# DOCKER_COMPLETION_SHOW_CONFIG_IDS
-# DOCKER_COMPLETION_SHOW_CONTAINER_IDS
-# DOCKER_COMPLETION_SHOW_NETWORK_IDS
-# DOCKER_COMPLETION_SHOW_NODE_IDS
-# DOCKER_COMPLETION_SHOW_PLUGIN_IDS
-# DOCKER_COMPLETION_SHOW_SECRET_IDS
-# DOCKER_COMPLETION_SHOW_SERVICE_IDS
+# BALENA_COMPLETION_SHOW_CONFIG_IDS
+# BALENA_COMPLETION_SHOW_CONTAINER_IDS
+# BALENA_COMPLETION_SHOW_NETWORK_IDS
+# BALENA_COMPLETION_SHOW_NODE_IDS
+# BALENA_COMPLETION_SHOW_PLUGIN_IDS
+# BALENA_COMPLETION_SHOW_SECRET_IDS
+# BALENA_COMPLETION_SHOW_SERVICE_IDS
 #   "no"  - Show names only (default)
 #   "yes" - Show names and ids
 #
@@ -43,20 +43,20 @@
 # "rmi" and "save" commands by settings the following environment
 # variables:
 #
-# DOCKER_COMPLETION_SHOW_IMAGE_IDS
+# BALENA_COMPLETION_SHOW_IMAGE_IDS
 #   "none" - Show names only (default)
 #   "non-intermediate" - Show names and ids, but omit intermediate image IDs
 #   "all" - Show names and ids, including intermediate image IDs
 #
-# DOCKER_COMPLETION_SHOW_TAGS
+# BALENA_COMPLETION_SHOW_TAGS
 #   "yes" - include tags in completion options (default)
 #   "no"  - don't include tags in completion options
 
 #
 # Note:
-# Currently, the completions will not work if the docker daemon is not
+# Currently, the completions will not work if the balena daemon is not
 # bound to the default communication port/socket
-# If the docker daemon is using a unix socket for communication your user
+# If the balena daemon is using a unix socket for communication your user
 # must have access to the socket for the completions to function correctly
 #
 # Note for developers:
@@ -64,22 +64,22 @@
 # options immediately following their corresponding long form.
 # This order should be applied to lists, alternatives and code blocks.
 
-__docker_previous_extglob_setting=$(shopt -p extglob)
+__balena_previous_extglob_setting=$(shopt -p extglob)
 shopt -s extglob
 
-__docker_q() {
-	docker ${host:+-H "$host"} ${config:+--config "$config"} 2>/dev/null "$@"
+__balena_q() {
+	balena ${host:+-H "$host"} ${config:+--config "$config"} 2>/dev/null "$@"
 }
 
-# __docker_configs returns a list of configs. Additional options to
-# `docker config ls` may be specified in order to filter the list, e.g.
-# `__docker_configs --filter label=stage=production`.
+# __balena_configs returns a list of configs. Additional options to
+# `balena config ls` may be specified in order to filter the list, e.g.
+# `__balena_configs --filter label=stage=production`.
 # By default, only names are returned.
-# Set DOCKER_COMPLETION_SHOW_CONFIG_IDS=yes to also complete IDs.
+# Set BALENA_COMPLETION_SHOW_CONFIG_IDS=yes to also complete IDs.
 # An optional first option `--id|--name` may be used to limit the
 # output to the IDs or names of matching items. This setting takes
 # precedence over the environment setting.
-__docker_configs() {
+__balena_configs() {
 	local format
 	if [ "$1" = "--id" ] ; then
 		format='{{.ID}}'
@@ -87,35 +87,35 @@ __docker_configs() {
 	elif [ "$1" = "--name" ] ; then
 		format='{{.Name}}'
 		shift
-	elif [ "$DOCKER_COMPLETION_SHOW_CONFIG_IDS" = yes ] ; then
+	elif [ "$BALENA_COMPLETION_SHOW_CONFIG_IDS" = yes ] ; then
 		format='{{.ID}} {{.Name}}'
 	else
 		format='{{.Name}}'
 	fi
 
-	__docker_q config ls --format "$format" "$@"
+	__balena_q config ls --format "$format" "$@"
 }
 
-# __docker_complete_configs applies completion of configs based on the current value
+# __balena_complete_configs applies completion of configs based on the current value
 # of `$cur` or the value of the optional first option `--cur`, if given.
-__docker_complete_configs() {
+__balena_complete_configs() {
 	local current="$cur"
 	if [ "$1" = "--cur" ] ; then
 		current="$2"
 		shift 2
 	fi
-	COMPREPLY=( $(compgen -W "$(__docker_configs "$@")" -- "$current") )
+	COMPREPLY=( $(compgen -W "$(__balena_configs "$@")" -- "$current") )
 }
 
-# __docker_containers returns a list of containers. Additional options to
-# `docker ps` may be specified in order to filter the list, e.g.
-# `__docker_containers --filter status=running`
+# __balena_containers returns a list of containers. Additional options to
+# `balena ps` may be specified in order to filter the list, e.g.
+# `__balena_containers --filter status=running`
 # By default, only names are returned.
-# Set DOCKER_COMPLETION_SHOW_CONTAINER_IDS=yes to also complete IDs.
+# Set BALENA_COMPLETION_SHOW_CONTAINER_IDS=yes to also complete IDs.
 # An optional first option `--id|--name` may be used to limit the
 # output to the IDs or names of matching items. This setting takes
 # precedence over the environment setting.
-__docker_containers() {
+__balena_containers() {
 	local format
 	if [ "$1" = "--id" ] ; then
 		format='{{.ID}}'
@@ -123,65 +123,65 @@ __docker_containers() {
 	elif [ "$1" = "--name" ] ; then
 		format='{{.Names}}'
 		shift
-	elif [ "${DOCKER_COMPLETION_SHOW_CONTAINER_IDS}" = yes ] ; then
+	elif [ "${BALENA_COMPLETION_SHOW_CONTAINER_IDS}" = yes ] ; then
 		format='{{.ID}} {{.Names}}'
 	else
 		format='{{.Names}}'
 	fi
-	__docker_q ps --format "$format" "$@"
+	__balena_q ps --format "$format" "$@"
 }
 
-# __docker_complete_containers applies completion of containers based on the current
+# __balena_complete_containers applies completion of containers based on the current
 # value of `$cur` or the value of the optional first option `--cur`, if given.
-# Additional filters may be appended, see `__docker_containers`.
-__docker_complete_containers() {
+# Additional filters may be appended, see `__balena_containers`.
+__balena_complete_containers() {
 	local current="$cur"
 	if [ "$1" = "--cur" ] ; then
 		current="$2"
 		shift 2
 	fi
-	COMPREPLY=( $(compgen -W "$(__docker_containers "$@")" -- "$current") )
+	COMPREPLY=( $(compgen -W "$(__balena_containers "$@")" -- "$current") )
 }
 
-__docker_complete_containers_all() {
-	__docker_complete_containers "$@" --all
-}
-
-# shellcheck disable=SC2120
-__docker_complete_containers_removable() {
-	__docker_complete_containers "$@" --filter status=created --filter status=exited
-}
-
-__docker_complete_containers_running() {
-	__docker_complete_containers "$@" --filter status=running
+__balena_complete_containers_all() {
+	__balena_complete_containers "$@" --all
 }
 
 # shellcheck disable=SC2120
-__docker_complete_containers_stopped() {
-	__docker_complete_containers "$@" --filter status=exited
+__balena_complete_containers_removable() {
+	__balena_complete_containers "$@" --filter status=created --filter status=exited
+}
+
+__balena_complete_containers_running() {
+	__balena_complete_containers "$@" --filter status=running
 }
 
 # shellcheck disable=SC2120
-__docker_complete_containers_unpauseable() {
-	__docker_complete_containers "$@" --filter status=paused
+__balena_complete_containers_stopped() {
+	__balena_complete_containers "$@" --filter status=exited
 }
 
-__docker_complete_container_names() {
-	local containers=( $(__docker_q ps -aq --no-trunc) )
-	local names=( $(__docker_q inspect --format '{{.Name}}' "${containers[@]}") )
+# shellcheck disable=SC2120
+__balena_complete_containers_unpauseable() {
+	__balena_complete_containers "$@" --filter status=paused
+}
+
+__balena_complete_container_names() {
+	local containers=( $(__balena_q ps -aq --no-trunc) )
+	local names=( $(__balena_q inspect --format '{{.Name}}' "${containers[@]}") )
 	names=( "${names[@]#/}" ) # trim off the leading "/" from the container names
 	COMPREPLY=( $(compgen -W "${names[*]}" -- "$cur") )
 }
 
-__docker_complete_container_ids() {
-	local containers=( $(__docker_q ps -aq) )
+__balena_complete_container_ids() {
+	local containers=( $(__balena_q ps -aq) )
 	COMPREPLY=( $(compgen -W "${containers[*]}" -- "$cur") )
 }
 
-__docker_images() {
+__balena_images() {
 	local images_args=""
 
-	case "$DOCKER_COMPLETION_SHOW_IMAGE_IDS" in
+	case "$BALENA_COMPLETION_SHOW_IMAGE_IDS" in
 		all)
 			images_args="--no-trunc -a"
 			;;
@@ -191,14 +191,14 @@ __docker_images() {
 	esac
 
 	local repo_print_command
-	if [ "${DOCKER_COMPLETION_SHOW_TAGS:-yes}" = "yes" ]; then
+	if [ "${BALENA_COMPLETION_SHOW_TAGS:-yes}" = "yes" ]; then
 		repo_print_command='print $1; print $1":"$2'
 	else
 		repo_print_command='print $1'
 	fi
 
 	local awk_script
-	case "$DOCKER_COMPLETION_SHOW_IMAGE_IDS" in
+	case "$BALENA_COMPLETION_SHOW_IMAGE_IDS" in
 		all|non-intermediate)
 			awk_script='NR>1 { print $3; if ($1 != "<none>") { '"$repo_print_command"' } }'
 			;;
@@ -207,34 +207,34 @@ __docker_images() {
 			;;
 	esac
 
-	__docker_q images $images_args | awk "$awk_script" | grep -v '<none>$'
+	__balena_q images $images_args | awk "$awk_script" | grep -v '<none>$'
 }
 
-__docker_complete_images() {
-	COMPREPLY=( $(compgen -W "$(__docker_images)" -- "$cur") )
+__balena_complete_images() {
+	COMPREPLY=( $(compgen -W "$(__balena_images)" -- "$cur") )
 	__ltrim_colon_completions "$cur"
 }
 
-__docker_complete_image_repos() {
-	local repos="$(__docker_q images | awk 'NR>1 && $1 != "<none>" { print $1 }')"
+__balena_complete_image_repos() {
+	local repos="$(__balena_q images | awk 'NR>1 && $1 != "<none>" { print $1 }')"
 	COMPREPLY=( $(compgen -W "$repos" -- "$cur") )
 }
 
-__docker_complete_image_repos_and_tags() {
-	local reposAndTags="$(__docker_q images | awk 'NR>1 && $1 != "<none>" { print $1; print $1":"$2 }')"
+__balena_complete_image_repos_and_tags() {
+	local reposAndTags="$(__balena_q images | awk 'NR>1 && $1 != "<none>" { print $1; print $1":"$2 }')"
 	COMPREPLY=( $(compgen -W "$reposAndTags" -- "$cur") )
 	__ltrim_colon_completions "$cur"
 }
 
-# __docker_networks returns a list of all networks. Additional options to
-# `docker network ls` may be specified in order to filter the list, e.g.
-# `__docker_networks --filter type=custom`
+# __balena_networks returns a list of all networks. Additional options to
+# `balena network ls` may be specified in order to filter the list, e.g.
+# `__balena_networks --filter type=custom`
 # By default, only names are returned.
-# Set DOCKER_COMPLETION_SHOW_NETWORK_IDS=yes to also complete IDs.
+# Set BALENA_COMPLETION_SHOW_NETWORK_IDS=yes to also complete IDs.
 # An optional first option `--id|--name` may be used to limit the
 # output to the IDs or names of matching items. This setting takes
 # precedence over the environment setting.
-__docker_networks() {
+__balena_networks() {
 	local format
 	if [ "$1" = "--id" ] ; then
 		format='{{.ID}}'
@@ -242,60 +242,60 @@ __docker_networks() {
 	elif [ "$1" = "--name" ] ; then
 		format='{{.Name}}'
 		shift
-	elif [ "${DOCKER_COMPLETION_SHOW_NETWORK_IDS}" = yes ] ; then
+	elif [ "${BALENA_COMPLETION_SHOW_NETWORK_IDS}" = yes ] ; then
 		format='{{.ID}} {{.Name}}'
 	else
 		format='{{.Name}}'
 	fi
-	__docker_q network ls --format "$format" "$@"
+	__balena_q network ls --format "$format" "$@"
 }
 
-# __docker_complete_networks applies completion of networks based on the current
+# __balena_complete_networks applies completion of networks based on the current
 # value of `$cur` or the value of the optional first option `--cur`, if given.
-# Additional filters may be appended, see `__docker_networks`.
-__docker_complete_networks() {
+# Additional filters may be appended, see `__balena_networks`.
+__balena_complete_networks() {
 	local current="$cur"
 	if [ "$1" = "--cur" ] ; then
 		current="$2"
 		shift 2
 	fi
-	COMPREPLY=( $(compgen -W "$(__docker_networks "$@")" -- "$current") )
+	COMPREPLY=( $(compgen -W "$(__balena_networks "$@")" -- "$current") )
 }
 
 # shellcheck disable=SC2128,SC2178
-__docker_complete_containers_in_network() {
-	local containers=$(__docker_q network inspect -f '{{range $i, $c := .Containers}}{{$i}} {{$c.Name}} {{end}}' "$1")
+__balena_complete_containers_in_network() {
+	local containers=$(__balena_q network inspect -f '{{range $i, $c := .Containers}}{{$i}} {{$c.Name}} {{end}}' "$1")
 	COMPREPLY=( $(compgen -W "$containers" -- "$cur") )
 }
 
-# __docker_volumes returns a list of all volumes. Additional options to
-# `docker volume ls` may be specified in order to filter the list, e.g.
-# `__docker_volumes --filter dangling=true`
+# __balena_volumes returns a list of all volumes. Additional options to
+# `balena volume ls` may be specified in order to filter the list, e.g.
+# `__balena_volumes --filter dangling=true`
 # Because volumes do not have IDs, this function does not distinguish between
 # IDs and names.
-__docker_volumes() {
-	__docker_q volume ls -q "$@"
+__balena_volumes() {
+	__balena_q volume ls -q "$@"
 }
 
-# __docker_complete_volumes applies completion of volumes based on the current
+# __balena_complete_volumes applies completion of volumes based on the current
 # value of `$cur` or the value of the optional first option `--cur`, if given.
-# Additional filters may be appended, see `__docker_volumes`.
-__docker_complete_volumes() {
+# Additional filters may be appended, see `__balena_volumes`.
+__balena_complete_volumes() {
 	local current="$cur"
 	if [ "$1" = "--cur" ] ; then
 		current="$2"
 		shift 2
 	fi
-	COMPREPLY=( $(compgen -W "$(__docker_volumes "$@")" -- "$current") )
+	COMPREPLY=( $(compgen -W "$(__balena_volumes "$@")" -- "$current") )
 }
 
-# __docker_plugins_bundled returns a list of all plugins of a given type.
+# __balena_plugins_bundled returns a list of all plugins of a given type.
 # The type has to be specified with the mandatory option `--type`.
 # Valid types are: Network, Volume, Authorization.
 # Completions may be added or removed with `--add` and `--remove`
-# This function only deals with plugins that come bundled with Docker.
-# For plugins managed by `docker plugin`, see `__docker_plugins_installed`.
-__docker_plugins_bundled() {
+# This function only deals with plugins that come bundled with Balena.
+# For plugins managed by `balena plugin`, see `__balena_plugins_installed`.
+__balena_plugins_bundled() {
 	local type add=() remove=()
 	while true ; do
 		case "$1" in
@@ -317,7 +317,7 @@ __docker_plugins_bundled() {
 		esac
 	done
 
-	local plugins=($(__docker_q info --format "{{range \$i, \$p := .Plugins.$type}}{{.}} {{end}}"))
+	local plugins=($(__balena_q info --format "{{range \$i, \$p := .Plugins.$type}}{{.}} {{end}}"))
 	for del in "${remove[@]}" ; do
 		plugins=(${plugins[@]/$del/})
 	done
@@ -325,69 +325,69 @@ __docker_plugins_bundled() {
 	echo "${plugins[@]} ${add[@]}"
 }
 
-# __docker_complete_plugins_bundled applies completion of plugins based on the current
+# __balena_complete_plugins_bundled applies completion of plugins based on the current
 # value of `$cur` or the value of the optional first option `--cur`, if given.
 # The plugin type has to be specified with the next option `--type`.
-# This function only deals with plugins that come bundled with Docker.
-# For completion of plugins managed by `docker plugin`, see
-# `__docker_complete_plugins_installed`.
-__docker_complete_plugins_bundled() {
+# This function only deals with plugins that come bundled with Balena.
+# For completion of plugins managed by `balena plugin`, see
+# `__balena_complete_plugins_installed`.
+__balena_complete_plugins_bundled() {
 	local current="$cur"
 	if [ "$1" = "--cur" ] ; then
 		current="$2"
 		shift 2
 	fi
-	COMPREPLY=( $(compgen -W "$(__docker_plugins_bundled "$@")" -- "$current") )
+	COMPREPLY=( $(compgen -W "$(__balena_plugins_bundled "$@")" -- "$current") )
 }
 
-# __docker_plugins_installed returns a list of all plugins that were installed with
-# the Docker plugin API.
+# __balena_plugins_installed returns a list of all plugins that were installed with
+# the Balena plugin API.
 # By default, only names are returned.
-# Set DOCKER_COMPLETION_SHOW_PLUGIN_IDS=yes to also complete IDs.
-# Additional options to `docker plugin ls` may be specified in order to filter the list,
-# e.g. `__docker_plugins_installed --filter enabled=true`
-# For built-in pugins, see `__docker_plugins_bundled`.
-__docker_plugins_installed() {
+# Set BALENA_COMPLETION_SHOW_PLUGIN_IDS=yes to also complete IDs.
+# Additional options to `balena plugin ls` may be specified in order to filter the list,
+# e.g. `__balena_plugins_installed --filter enabled=true`
+# For built-in pugins, see `__balena_plugins_bundled`.
+__balena_plugins_installed() {
 	local format
-	if [ "$DOCKER_COMPLETION_SHOW_PLUGIN_IDS" = yes ] ; then
+	if [ "$BALENA_COMPLETION_SHOW_PLUGIN_IDS" = yes ] ; then
 		format='{{.ID}} {{.Name}}'
 	else
 		format='{{.Name}}'
 	fi
-	__docker_q plugin ls --format "$format" "$@"
+	__balena_q plugin ls --format "$format" "$@"
 }
 
-# __docker_complete_plugins_installed applies completion of plugins that were installed
-# with the Docker plugin API, based on the current value of `$cur` or the value of
+# __balena_complete_plugins_installed applies completion of plugins that were installed
+# with the Balena plugin API, based on the current value of `$cur` or the value of
 # the optional first option `--cur`, if given.
-# Additional filters may be appended, see `__docker_plugins_installed`.
-# For completion of built-in pugins, see `__docker_complete_plugins_bundled`.
-__docker_complete_plugins_installed() {
+# Additional filters may be appended, see `__balena_plugins_installed`.
+# For completion of built-in pugins, see `__balena_complete_plugins_bundled`.
+__balena_complete_plugins_installed() {
 	local current="$cur"
 	if [ "$1" = "--cur" ] ; then
 		current="$2"
 		shift 2
 	fi
-	COMPREPLY=( $(compgen -W "$(__docker_plugins_installed "$@")" -- "$current") )
+	COMPREPLY=( $(compgen -W "$(__balena_plugins_installed "$@")" -- "$current") )
 }
 
-__docker_runtimes() {
-	__docker_q info | sed -n 's/^Runtimes: \(.*\)/\1/p'
+__balena_runtimes() {
+	__balena_q info | sed -n 's/^Runtimes: \(.*\)/\1/p'
 }
 
-__docker_complete_runtimes() {
-	COMPREPLY=( $(compgen -W "$(__docker_runtimes)" -- "$cur") )
+__balena_complete_runtimes() {
+	COMPREPLY=( $(compgen -W "$(__balena_runtimes)" -- "$cur") )
 }
 
-# __docker_secrets returns a list of secrets. Additional options to
-# `docker secret ls` may be specified in order to filter the list, e.g.
-# `__docker_secrets --filter label=stage=production`
+# __balena_secrets returns a list of secrets. Additional options to
+# `balena secret ls` may be specified in order to filter the list, e.g.
+# `__balena_secrets --filter label=stage=production`
 # By default, only names are returned.
-# Set DOCKER_COMPLETION_SHOW_SECRET_IDS=yes to also complete IDs.
+# Set BALENA_COMPLETION_SHOW_SECRET_IDS=yes to also complete IDs.
 # An optional first option `--id|--name` may be used to limit the
 # output to the IDs or names of matching items. This setting takes
 # precedence over the environment setting.
-__docker_secrets() {
+__balena_secrets() {
 	local format
 	if [ "$1" = "--id" ] ; then
 		format='{{.ID}}'
@@ -395,55 +395,55 @@ __docker_secrets() {
 	elif [ "$1" = "--name" ] ; then
 		format='{{.Name}}'
 		shift
-	elif [ "$DOCKER_COMPLETION_SHOW_SECRET_IDS" = yes ] ; then
+	elif [ "$BALENA_COMPLETION_SHOW_SECRET_IDS" = yes ] ; then
 		format='{{.ID}} {{.Name}}'
 	else
 		format='{{.Name}}'
 	fi
 
-	__docker_q secret ls --format "$format" "$@"
+	__balena_q secret ls --format "$format" "$@"
 }
 
-# __docker_complete_secrets applies completion of secrets based on the current value
+# __balena_complete_secrets applies completion of secrets based on the current value
 # of `$cur` or the value of the optional first option `--cur`, if given.
-__docker_complete_secrets() {
+__balena_complete_secrets() {
 	local current="$cur"
 	if [ "$1" = "--cur" ] ; then
 		current="$2"
 		shift 2
 	fi
-	COMPREPLY=( $(compgen -W "$(__docker_secrets "$@")" -- "$current") )
+	COMPREPLY=( $(compgen -W "$(__balena_secrets "$@")" -- "$current") )
 }
 
-# __docker_stacks returns a list of all stacks.
-__docker_stacks() {
-	__docker_q stack ls | awk 'NR>1 {print $1}'
+# __balena_stacks returns a list of all stacks.
+__balena_stacks() {
+	__balena_q stack ls | awk 'NR>1 {print $1}'
 }
 
-# __docker_complete_stacks applies completion of stacks based on the current value
+# __balena_complete_stacks applies completion of stacks based on the current value
 # of `$cur` or the value of the optional first option `--cur`, if given.
-__docker_complete_stacks() {
+__balena_complete_stacks() {
 	local current="$cur"
 	if [ "$1" = "--cur" ] ; then
 		current="$2"
 		shift 2
 	fi
-	COMPREPLY=( $(compgen -W "$(__docker_stacks "$@")" -- "$current") )
+	COMPREPLY=( $(compgen -W "$(__balena_stacks "$@")" -- "$current") )
 }
 
-# __docker_nodes returns a list of all nodes. Additional options to
-# `docker node ls` may be specified in order to filter the list, e.g.
-# `__docker_nodes --filter role=manager`
+# __balena_nodes returns a list of all nodes. Additional options to
+# `balena node ls` may be specified in order to filter the list, e.g.
+# `__balena_nodes --filter role=manager`
 # By default, only node names are returned.
-# Set DOCKER_COMPLETION_SHOW_NODE_IDS=yes to also complete node IDs.
+# Set BALENA_COMPLETION_SHOW_NODE_IDS=yes to also complete node IDs.
 # An optional first option `--id|--name` may be used to limit the
 # output to the IDs or names of matching items. This setting takes
 # precedence over the environment setting.
 # Completions may be added with `--add`, e.g. `--add self`.
-__docker_nodes() {
+__balena_nodes() {
 	local add=()
 	local fields='$2'  # default: node name only
-	[ "${DOCKER_COMPLETION_SHOW_NODE_IDS}" = yes ] && fields='$1,$2' # ID and name
+	[ "${BALENA_COMPLETION_SHOW_NODE_IDS}" = yes ] && fields='$1,$2' # ID and name
 
 	while true ; do
 		case "$1" in
@@ -465,32 +465,32 @@ __docker_nodes() {
 		esac
 	done
 
-	echo "$(__docker_q node ls "$@" | tr -d '*' | awk "NR>1 {print $fields}")" "${add[@]}"
+	echo "$(__balena_q node ls "$@" | tr -d '*' | awk "NR>1 {print $fields}")" "${add[@]}"
 }
 
-# __docker_complete_nodes applies completion of nodes based on the current
+# __balena_complete_nodes applies completion of nodes based on the current
 # value of `$cur` or the value of the optional first option `--cur`, if given.
-# Additional filters may be appended, see `__docker_nodes`.
-__docker_complete_nodes() {
+# Additional filters may be appended, see `__balena_nodes`.
+__balena_complete_nodes() {
 	local current="$cur"
 	if [ "$1" = "--cur" ] ; then
 		current="$2"
 		shift 2
 	fi
-	COMPREPLY=( $(compgen -W "$(__docker_nodes "$@")" -- "$current") )
+	COMPREPLY=( $(compgen -W "$(__balena_nodes "$@")" -- "$current") )
 }
 
-# __docker_services returns a list of all services. Additional options to
-# `docker service ls` may be specified in order to filter the list, e.g.
-# `__docker_services --filter name=xxx`
+# __balena_services returns a list of all services. Additional options to
+# `balena service ls` may be specified in order to filter the list, e.g.
+# `__balena_services --filter name=xxx`
 # By default, only node names are returned.
-# Set DOCKER_COMPLETION_SHOW_SERVICE_IDS=yes to also complete IDs.
+# Set BALENA_COMPLETION_SHOW_SERVICE_IDS=yes to also complete IDs.
 # An optional first option `--id|--name` may be used to limit the
 # output to the IDs or names of matching items. This setting takes
 # precedence over the environment setting.
-__docker_services() {
+__balena_services() {
 	local fields='$2'  # default: service name only
-	[ "${DOCKER_COMPLETION_SHOW_SERVICE_IDS}" = yes ] && fields='$1,$2' # ID & name
+	[ "${BALENA_COMPLETION_SHOW_SERVICE_IDS}" = yes ] && fields='$1,$2' # ID & name
 
 	if [ "$1" = "--id" ] ; then
 		fields='$1' # IDs only
@@ -499,65 +499,65 @@ __docker_services() {
 		fields='$2' # names only
 		shift
 	fi
-        __docker_q service ls "$@" | awk "NR>1 {print $fields}"
+        __balena_q service ls "$@" | awk "NR>1 {print $fields}"
 }
 
-# __docker_complete_services applies completion of services based on the current
+# __balena_complete_services applies completion of services based on the current
 # value of `$cur` or the value of the optional first option `--cur`, if given.
-# Additional filters may be appended, see `__docker_services`.
-__docker_complete_services() {
+# Additional filters may be appended, see `__balena_services`.
+__balena_complete_services() {
 	local current="$cur"
 	if [ "$1" = "--cur" ] ; then
 		current="$2"
 		shift 2
 	fi
-	COMPREPLY=( $(compgen -W "$(__docker_services "$@")" -- "$current") )
+	COMPREPLY=( $(compgen -W "$(__balena_services "$@")" -- "$current") )
 }
 
-# __docker_tasks returns a list of all task IDs.
-__docker_tasks() {
-	__docker_q service ps --format '{{.ID}}' ""
+# __balena_tasks returns a list of all task IDs.
+__balena_tasks() {
+	__balena_q service ps --format '{{.ID}}' ""
 }
 
-# __docker_complete_services_and_tasks applies completion of services and task IDs.
+# __balena_complete_services_and_tasks applies completion of services and task IDs.
 # shellcheck disable=SC2120
-__docker_complete_services_and_tasks() {
-	COMPREPLY=( $(compgen -W "$(__docker_services "$@") $(__docker_tasks)" -- "$cur") )
+__balena_complete_services_and_tasks() {
+	COMPREPLY=( $(compgen -W "$(__balena_services "$@") $(__balena_tasks)" -- "$cur") )
 }
 
-# __docker_append_to_completions appends the word passed as an argument to every
+# __balena_append_to_completions appends the word passed as an argument to every
 # word in `$COMPREPLY`.
 # Normally you do this with `compgen -S` while generating the completions.
 # This function allows you to append a suffix later. It allows you to use
-# the __docker_complete_XXX functions in cases where you need a suffix.
-__docker_append_to_completions() {
+# the __balena_complete_XXX functions in cases where you need a suffix.
+__balena_append_to_completions() {
 	COMPREPLY=( ${COMPREPLY[@]/%/"$1"} )
 }
 
-# __docker_daemon_is_experimental tests whether the currently configured Docker
+# __balena_daemon_is_experimental tests whether the currently configured Balena
 # daemon runs in experimental mode. If so, the function exits with 0 (true).
 # Otherwise, or if the result cannot be determined, the exit value is 1 (false).
-__docker_daemon_is_experimental() {
-	[ "$(__docker_q version -f '{{.Server.Experimental}}')" = "true" ]
+__balena_daemon_is_experimental() {
+	[ "$(__balena_q version -f '{{.Server.Experimental}}')" = "true" ]
 }
 
-# __docker_daemon_os_is tests whether the currently configured Docker daemon runs
+# __balena_daemon_os_is tests whether the currently configured Balena daemon runs
 # on the operating system passed in as the first argument.
 # It does so by querying the daemon for its OS. The result is cached for the duration
 # of one invocation of bash completion so that this function can be used to test for
 # several different operating systems without additional costs.
 # Known operating systems: linux, windows.
-__docker_daemon_os_is() {
+__balena_daemon_os_is() {
 	local expected_os="$1"
-	local actual_os=${daemon_os=$(__docker_q version -f '{{.Server.Os}}')}
+	local actual_os=${daemon_os=$(__balena_q version -f '{{.Server.Os}}')}
 	[ "$actual_os" = "$expected_os" ]
 }
 
-# __docker_pos_first_nonflag finds the position of the first word that is neither
+# __balena_pos_first_nonflag finds the position of the first word that is neither
 # option nor an option's argument. If there are options that require arguments,
 # you should pass a glob describing those options, e.g. "--option1|-o|--option2"
 # Use this function to restrict completions to exact positions after the argument list.
-__docker_pos_first_nonflag() {
+__balena_pos_first_nonflag() {
 	local argument_flags=$1
 
 	local counter=$((${subcommand_pos:-${command_pos}} + 1))
@@ -588,10 +588,10 @@ __docker_pos_first_nonflag() {
 	echo $counter
 }
 
-# __docker_map_key_of_current_option returns `key` if we are currently completing the
+# __balena_map_key_of_current_option returns `key` if we are currently completing the
 # value of a map option (`key=value`) which matches the extglob given as an argument.
 # This function is needed for key-specific completions.
-__docker_map_key_of_current_option() {
+__balena_map_key_of_current_option() {
 	local glob="$1"
 
 	local key glob_pos
@@ -613,12 +613,12 @@ __docker_map_key_of_current_option() {
 	[[ ${words[$glob_pos]} == @($glob) ]] && echo "$key"
 }
 
-# __docker_value_of_option returns the value of the first option matching `option_glob`.
+# __balena_value_of_option returns the value of the first option matching `option_glob`.
 # Valid values for `option_glob` are option names like `--log-level` and globs like
 # `--log-level|-l`
 # Only positions between the command and the current word are considered.
-__docker_value_of_option() {
-	local option_extglob=$(__docker_to_extglob "$1")
+__balena_value_of_option() {
+	local option_extglob=$(__balena_to_extglob "$1")
 
 	local counter=$((command_pos + 1))
 	while [ "$counter" -lt "$cword" ]; do
@@ -632,23 +632,23 @@ __docker_value_of_option() {
 	done
 }
 
-# __docker_to_alternatives transforms a multiline list of strings into a single line
+# __balena_to_alternatives transforms a multiline list of strings into a single line
 # string with the words separated by `|`.
-# This is used to prepare arguments to __docker_pos_first_nonflag().
-__docker_to_alternatives() {
+# This is used to prepare arguments to __balena_pos_first_nonflag().
+__balena_to_alternatives() {
 	local parts=( $1 )
 	local IFS='|'
 	echo "${parts[*]}"
 }
 
-# __docker_to_extglob transforms a multiline list of options into an extglob pattern
+# __balena_to_extglob transforms a multiline list of options into an extglob pattern
 # suitable for use in case statements.
-__docker_to_extglob() {
-	local extglob=$( __docker_to_alternatives "$1" )
+__balena_to_extglob() {
+	local extglob=$( __balena_to_alternatives "$1" )
 	echo "@($extglob)"
 }
 
-# __docker_subcommands processes subcommands
+# __balena_subcommands processes subcommands
 # Locates the first occurrence of any of the subcommands contained in the
 # first argument. In case of a match, calls the corresponding completion
 # function and returns 0.
@@ -658,16 +658,16 @@ __docker_to_extglob() {
 # TODO if the preceding command has options that accept arguments and an
 # argument is equal ot one of the subcommands, this is falsely detected as
 # a match.
-__docker_subcommands() {
+__balena_subcommands() {
 	local subcommands="$1"
 
 	local counter=$((command_pos + 1))
 	while [ "$counter" -lt "$cword" ]; do
 		case "${words[$counter]}" in
-			$(__docker_to_extglob "$subcommands") )
+			$(__balena_to_extglob "$subcommands") )
 				subcommand_pos=$counter
 				local subcommand=${words[$counter]}
-				local completions_func=_docker_${command}_${subcommand//-/_}
+				local completions_func=_balena_${command}_${subcommand//-/_}
 				declare -F "$completions_func" >/dev/null && "$completions_func"
 				return 0
 				;;
@@ -677,21 +677,21 @@ __docker_subcommands() {
 	return 1
 }
 
-# __docker_nospace suppresses trailing whitespace
-__docker_nospace() {
+# __balena_nospace suppresses trailing whitespace
+__balena_nospace() {
 	# compopt is not available in ancient bash versions
 	type compopt &>/dev/null && compopt -o nospace
 }
 
-__docker_complete_resolved_hostname() {
+__balena_complete_resolved_hostname() {
 	command -v host >/dev/null 2>&1 || return
 	COMPREPLY=( $(host 2>/dev/null "${cur%:}" | awk '/has address/ {print $4}') )
 }
 
-# __docker_local_interfaces returns a list of the names and addresses of all
+# __balena_local_interfaces returns a list of the names and addresses of all
 # local network interfaces.
 # If `--ip-only` is passed as a first argument, only addresses are returned.
-__docker_local_interfaces() {
+__balena_local_interfaces() {
 	command -v ip >/dev/null 2>&1 || return
 
 	local format
@@ -705,29 +705,29 @@ __docker_local_interfaces() {
 	ip addr show scope global 2>/dev/null | sed -n "s| \+inet \([0-9.]\+\).* \([^ ]\+\)|$format|p"
 }
 
-# __docker_complete_local_interfaces applies completion of the names and addresses of all
+# __balena_complete_local_interfaces applies completion of the names and addresses of all
 # local network interfaces based on the current value of `$cur`.
 # An additional value can be added to the possible completions with an `--add` argument.
-__docker_complete_local_interfaces() {
+__balena_complete_local_interfaces() {
 	local additional_interface
 	if [ "$1" = "--add" ] ; then
 		additional_interface="$2"
 		shift 2
 	fi
 
-	COMPREPLY=( $( compgen -W "$(__docker_local_interfaces "$@") $additional_interface" -- "$cur" ) )
+	COMPREPLY=( $( compgen -W "$(__balena_local_interfaces "$@") $additional_interface" -- "$cur" ) )
 }
 
-# __docker_complete_local_ips applies completion of the addresses of all local network
+# __balena_complete_local_ips applies completion of the addresses of all local network
 # interfaces based on the current value of `$cur`.
-__docker_complete_local_ips() {
-	__docker_complete_local_interfaces --ip-only
+__balena_complete_local_ips() {
+	__balena_complete_local_interfaces --ip-only
 }
 
-# __docker_complete_capabilities_addable completes Linux capabilities which are
+# __balena_complete_capabilities_addable completes Linux capabilities which are
 # not granted by default and may be added.
-# see https://docs.docker.com/engine/reference/run/#/runtime-privilege-and-linux-capabilities
-__docker_complete_capabilities_addable() {
+# see https://docs.balena.com/engine/reference/run/#/runtime-privilege-and-linux-capabilities
+__balena_complete_capabilities_addable() {
 	COMPREPLY=( $( compgen -W "
 		ALL
 		AUDIT_CONTROL
@@ -756,10 +756,10 @@ __docker_complete_capabilities_addable() {
 	" -- "$cur" ) )
 }
 
-# __docker_complete_capabilities_droppable completes Linux capability options which are
+# __balena_complete_capabilities_droppable completes Linux capability options which are
 # allowed by default and can be dropped.
-# see https://docs.docker.com/engine/reference/run/#/runtime-privilege-and-linux-capabilities
-__docker_complete_capabilities_droppable() {
+# see https://docs.balena.com/engine/reference/run/#/runtime-privilege-and-linux-capabilities
+__balena_complete_capabilities_droppable() {
 	COMPREPLY=( $( compgen -W "
 		ALL
 		AUDIT_WRITE
@@ -779,7 +779,7 @@ __docker_complete_capabilities_droppable() {
 	" -- "$cur" ) )
 }
 
-__docker_complete_detach_keys() {
+__balena_complete_detach_keys() {
 	case "$prev" in
 		--detach-keys)
 			case "$cur" in
@@ -791,18 +791,18 @@ __docker_complete_detach_keys() {
 					;;
 			esac
 
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 	esac
 	return 1
 }
 
-__docker_complete_isolation() {
+__balena_complete_isolation() {
 	COMPREPLY=( $( compgen -W "default hyperv process" -- "$cur" ) )
 }
 
-__docker_complete_log_drivers() {
+__balena_complete_log_drivers() {
 	COMPREPLY=( $( compgen -W "
 		awslogs
 		etwlogs
@@ -818,8 +818,8 @@ __docker_complete_log_drivers() {
 	" -- "$cur" ) )
 }
 
-__docker_complete_log_options() {
-	# see repository docker/docker.github.io/engine/admin/logging/
+__balena_complete_log_options() {
+	# see repository balena/balena.github.io/engine/admin/logging/
 
 	# really global options, defined in https://github.com/moby/moby/blob/master/daemon/logger/factory.go
 	local common_options1="max-buffer-size mode"
@@ -841,7 +841,7 @@ __docker_complete_log_options() {
 
 	local all_options="$fluentd_options $gcplogs_options $gelf_options $journald_options $logentries_options $json_file_options $syslog_options $splunk_options"
 
-	case $(__docker_value_of_option --log-driver) in
+	case $(__balena_value_of_option --log-driver) in
 		'')
 			COMPREPLY=( $( compgen -W "$all_options" -S = -- "$cur" ) )
 			;;
@@ -877,11 +877,11 @@ __docker_complete_log_options() {
 			;;
 	esac
 
-	__docker_nospace
+	__balena_nospace
 }
 
-__docker_complete_log_driver_options() {
-	local key=$(__docker_map_key_of_current_option '--log-opt')
+__balena_complete_log_driver_options() {
+	local key=$(__balena_map_key_of_current_option '--log-opt')
 	case "$key" in
 		awslogs-create-group)
 			COMPREPLY=( $( compgen -W "false true" -- "${cur##*=}" ) )
@@ -893,7 +893,7 @@ __docker_complete_log_driver_options() {
 			;;
 		gelf-address)
 			COMPREPLY=( $( compgen -W "udp" -S "://" -- "${cur##*=}" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		gelf-compression-level)
@@ -910,7 +910,7 @@ __docker_complete_log_driver_options() {
 			;;
 		syslog-address)
 			COMPREPLY=( $( compgen -W "tcp:// tcp+tls:// udp:// unix://" -- "${cur##*=}" ) )
-			__docker_nospace
+			__balena_nospace
 			__ltrim_colon_completions "${cur}"
 			return
 			;;
@@ -953,7 +953,7 @@ __docker_complete_log_driver_options() {
 			;;
 		splunk-url)
 			COMPREPLY=( $( compgen -W "http:// https://" -- "${cur##*=}" ) )
-			__docker_nospace
+			__balena_nospace
 			__ltrim_colon_completions "${cur}"
 			return
 			;;
@@ -969,11 +969,11 @@ __docker_complete_log_driver_options() {
 	return 1
 }
 
-__docker_complete_log_levels() {
+__balena_complete_log_levels() {
 	COMPREPLY=( $( compgen -W "debug info warn error fatal" -- "$cur" ) )
 }
 
-__docker_complete_restart() {
+__balena_complete_restart() {
 	case "$prev" in
 		--restart)
 			case "$cur" in
@@ -989,9 +989,9 @@ __docker_complete_restart() {
 	return 1
 }
 
-# __docker_complete_signals returns a subset of the available signals that is most likely
-# relevant in the context of docker containers
-__docker_complete_signals() {
+# __balena_complete_signals returns a subset of the available signals that is most likely
+# relevant in the context of balena containers
+__balena_complete_signals() {
 	local signals=(
 		SIGCONT
 		SIGHUP
@@ -1006,17 +1006,17 @@ __docker_complete_signals() {
 	COMPREPLY=( $( compgen -W "${signals[*]} ${signals[*]#SIG}" -- "$( echo "$cur" | tr '[:lower:]' '[:upper:]')" ) )
 }
 
-__docker_complete_user_group() {
+__balena_complete_user_group() {
 	if [[ $cur == *:* ]] ; then
 		COMPREPLY=( $(compgen -g -- "${cur#*:}") )
 	else
 		COMPREPLY=( $(compgen -u -S : -- "$cur") )
-		__docker_nospace
+		__balena_nospace
 	fi
 }
 
-_docker_docker() {
-	# global options that may appear after the docker command
+_balena_balena() {
+	# global options that may appear after the balena command
 	local boolean_options="
 		$global_boolean_options
 		--help
@@ -1029,10 +1029,10 @@ _docker_docker() {
 			return
 			;;
 		--log-level|-l)
-			__docker_complete_log_levels
+			__balena_complete_log_levels
 			return
 			;;
-		$(__docker_to_extglob "$global_options_with_args") )
+		$(__balena_to_extglob "$global_options_with_args") )
 			return
 			;;
 	esac
@@ -1042,25 +1042,25 @@ _docker_docker() {
 			COMPREPLY=( $( compgen -W "$boolean_options $global_options_with_args" -- "$cur" ) )
 			;;
 		*)
-			local counter=$( __docker_pos_first_nonflag "$(__docker_to_extglob "$global_options_with_args")" )
+			local counter=$( __balena_pos_first_nonflag "$(__balena_to_extglob "$global_options_with_args")" )
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_daemon_is_experimental && commands+=(${experimental_commands[*]})
+				__balena_daemon_is_experimental && commands+=(${experimental_commands[*]})
 				COMPREPLY=( $( compgen -W "${commands[*]} help" -- "$cur" ) )
 			fi
 			;;
 	esac
 }
 
-_docker_attach() {
-	_docker_container_attach
+_balena_attach() {
+	_balena_container_attach
 }
 
-_docker_build() {
-	_docker_image_build
+_balena_build() {
+	_balena_image_build
 }
 
 
-_docker_checkpoint() {
+_balena_checkpoint() {
 	local subcommands="
 		create
 		ls
@@ -1070,7 +1070,7 @@ _docker_checkpoint() {
 		list
 		remove
 	"
-	__docker_subcommands "$subcommands $aliases" && return
+	__balena_subcommands "$subcommands $aliases" && return
 
 	case "$cur" in
 		-*)
@@ -1082,7 +1082,7 @@ _docker_checkpoint() {
 	esac
 }
 
-_docker_checkpoint_create() {
+_balena_checkpoint_create() {
 	case "$prev" in
 		--checkpoint-dir)
 			_filedir -d
@@ -1095,15 +1095,15 @@ _docker_checkpoint_create() {
 			COMPREPLY=( $( compgen -W "--checkpoint-dir --help --leave-running" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--checkpoint-dir')
+			local counter=$(__balena_pos_first_nonflag '--checkpoint-dir')
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_containers_running
+				__balena_complete_containers_running
 			fi
 			;;
 	esac
 }
 
-_docker_checkpoint_ls() {
+_balena_checkpoint_ls() {
 	case "$prev" in
 		--checkpoint-dir)
 			_filedir -d
@@ -1116,15 +1116,15 @@ _docker_checkpoint_ls() {
 			COMPREPLY=( $( compgen -W "--checkpoint-dir --help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--checkpoint-dir')
+			local counter=$(__balena_pos_first_nonflag '--checkpoint-dir')
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_containers_all
+				__balena_complete_containers_all
 			fi
 			;;
 	esac
 }
 
-_docker_checkpoint_rm() {
+_balena_checkpoint_rm() {
 	case "$prev" in
 		--checkpoint-dir)
 			_filedir -d
@@ -1137,18 +1137,18 @@ _docker_checkpoint_rm() {
 			COMPREPLY=( $( compgen -W "--checkpoint-dir --help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--checkpoint-dir')
+			local counter=$(__balena_pos_first_nonflag '--checkpoint-dir')
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_containers_all
+				__balena_complete_containers_all
 			elif [ "$cword" -eq "$((counter + 1))" ]; then
-				COMPREPLY=( $( compgen -W "$(__docker_q checkpoint ls "$prev" | sed 1d)" -- "$cur" ) )
+				COMPREPLY=( $( compgen -W "$(__balena_q checkpoint ls "$prev" | sed 1d)" -- "$cur" ) )
 			fi
 			;;
 	esac
 }
 
 
-_docker_config() {
+_balena_config() {
 	local subcommands="
 		create
 		inspect
@@ -1159,7 +1159,7 @@ _docker_config() {
 		list
 		remove
 	"
-	__docker_subcommands "$subcommands $aliases" && return
+	__balena_subcommands "$subcommands $aliases" && return
 
 	case "$cur" in
 		-*)
@@ -1171,7 +1171,7 @@ _docker_config() {
 	esac
 }
 
-_docker_config_create() {
+_balena_config_create() {
 	case "$prev" in
 		--label|-l)
 			return
@@ -1183,7 +1183,7 @@ _docker_config_create() {
 			COMPREPLY=( $( compgen -W "--help --label -l" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--label|-l')
+			local counter=$(__balena_pos_first_nonflag '--label|-l')
 			if [ "$cword" -eq $((counter + 1)) ]; then
 				_filedir
 			fi
@@ -1191,7 +1191,7 @@ _docker_config_create() {
 	esac
 }
 
-_docker_config_inspect() {
+_balena_config_inspect() {
 	case "$prev" in
 		--format|-f)
 			return
@@ -1203,24 +1203,24 @@ _docker_config_inspect() {
 			COMPREPLY=( $( compgen -W "--format -f --help --pretty" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_configs
+			__balena_complete_configs
 			;;
 	esac
 }
 
-_docker_config_list() {
-	_docker_config_ls
+_balena_config_list() {
+	_balena_config_ls
 }
 
-_docker_config_ls() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_config_ls() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		id)
-			__docker_complete_configs --cur "${cur##*=}" --id
+			__balena_complete_configs --cur "${cur##*=}" --id
 			return
 			;;
 		name)
-			__docker_complete_configs --cur "${cur##*=}" --name
+			__balena_complete_configs --cur "${cur##*=}" --name
 			return
 			;;
 	esac
@@ -1228,7 +1228,7 @@ _docker_config_ls() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -S = -W "id label name" -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--format)
@@ -1243,23 +1243,23 @@ _docker_config_ls() {
 	esac
 }
 
-_docker_config_remove() {
-	_docker_config_rm
+_balena_config_remove() {
+	_balena_config_rm
 }
 
-_docker_config_rm() {
+_balena_config_rm() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_configs
+			__balena_complete_configs
 			;;
 	esac
 }
 
 
-_docker_container() {
+_balena_container() {
 	local subcommands="
 		attach
 		commit
@@ -1291,7 +1291,7 @@ _docker_container() {
 		list
 		ps
 	"
-	__docker_subcommands "$subcommands $aliases" && return
+	__balena_subcommands "$subcommands $aliases" && return
 
 	case "$cur" in
 		-*)
@@ -1303,23 +1303,23 @@ _docker_container() {
 	esac
 }
 
-_docker_container_attach() {
-	__docker_complete_detach_keys && return
+_balena_container_attach() {
+	__balena_complete_detach_keys && return
 
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--detach-keys --help --no-stdin --sig-proxy=false" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--detach-keys')
+			local counter=$(__balena_pos_first_nonflag '--detach-keys')
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_containers_running
+				__balena_complete_containers_running
 			fi
 			;;
 	esac
 }
 
-_docker_container_commit() {
+_balena_container_commit() {
 	case "$prev" in
 		--author|-a|--change|-c|--message|-m)
 			return
@@ -1331,29 +1331,29 @@ _docker_container_commit() {
 			COMPREPLY=( $( compgen -W "--author -a --change -c --help --message -m --pause=false -p=false" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--author|-a|--change|-c|--message|-m')
+			local counter=$(__balena_pos_first_nonflag '--author|-a|--change|-c|--message|-m')
 
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_containers_all
+				__balena_complete_containers_all
 				return
 			fi
 			(( counter++ ))
 
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_image_repos_and_tags
+				__balena_complete_image_repos_and_tags
 				return
 			fi
 			;;
 	esac
 }
 
-_docker_container_cp() {
+_balena_container_cp() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--follow-link -L --help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
 				case "$cur" in
 					*:)
@@ -1364,14 +1364,14 @@ _docker_container_cp() {
 						_filedir
 						local files=( ${COMPREPLY[@]} )
 
-						__docker_complete_containers_all
+						__balena_complete_containers_all
 						COMPREPLY=( $( compgen -W "${COMPREPLY[*]}" -S ':' ) )
 						local containers=( ${COMPREPLY[@]} )
 
 						COMPREPLY=( $( compgen -W "${files[*]} ${containers[*]}" -- "$cur" ) )
 						# shellcheck disable=SC2128
 						if [[ "$COMPREPLY" == *: ]]; then
-							__docker_nospace
+							__balena_nospace
 						fi
 						return
 						;;
@@ -1381,9 +1381,9 @@ _docker_container_cp() {
 
 			if [ "$cword" -eq "$counter" ]; then
 				if [ -e "$prev" ]; then
-					__docker_complete_containers_all
+					__balena_complete_containers_all
 					COMPREPLY=( $( compgen -W "${COMPREPLY[*]}" -S ':' ) )
-					__docker_nospace
+					__balena_nospace
 				else
 					_filedir
 				fi
@@ -1393,36 +1393,36 @@ _docker_container_cp() {
 	esac
 }
 
-_docker_container_create() {
-	_docker_container_run_and_create
+_balena_container_create() {
+	_balena_container_run_and_create
 }
 
-_docker_container_diff() {
+_balena_container_diff() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_containers_all
+				__balena_complete_containers_all
 			fi
 			;;
 	esac
 }
 
-_docker_container_exec() {
-	__docker_complete_detach_keys && return
+_balena_container_exec() {
+	__balena_complete_detach_keys && return
 
 	case "$prev" in
 		--env|-e)
 			# we do not append a "=" here because "-e VARNAME" is legal syntax, too
 			COMPREPLY=( $( compgen -e -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--user|-u)
-			__docker_complete_user_group
+			__balena_complete_user_group
 			return
 			;;
 	esac
@@ -1432,12 +1432,12 @@ _docker_container_exec() {
 			COMPREPLY=( $( compgen -W "--detach -d --detach-keys --env -e --help --interactive -i --privileged -t --tty -u --user" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_containers_running
+			__balena_complete_containers_running
 			;;
 	esac
 }
 
-_docker_container_export() {
+_balena_container_export() {
 	case "$prev" in
 		--output|-o)
 			_filedir
@@ -1450,22 +1450,22 @@ _docker_container_export() {
 			COMPREPLY=( $( compgen -W "--help --output -o" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_containers_all
+				__balena_complete_containers_all
 			fi
 			;;
 	esac
 }
 
-_docker_container_inspect() {
-	_docker_inspect --type container
+_balena_container_inspect() {
+	_balena_inspect --type container
 }
 
-_docker_container_kill() {
+_balena_container_kill() {
 	case "$prev" in
 		--signal|-s)
-			__docker_complete_signals
+			__balena_complete_signals
 			return
 			;;
 	esac
@@ -1475,12 +1475,12 @@ _docker_container_kill() {
 			COMPREPLY=( $( compgen -W "--help --signal -s" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_containers_running
+			__balena_complete_containers_running
 			;;
 	esac
 }
 
-_docker_container_logs() {
+_balena_container_logs() {
 	case "$prev" in
 		--since|--tail)
 			return
@@ -1492,35 +1492,35 @@ _docker_container_logs() {
 			COMPREPLY=( $( compgen -W "--details --follow -f --help --since --tail --timestamps -t" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--since|--tail')
+			local counter=$(__balena_pos_first_nonflag '--since|--tail')
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_containers_all
+				__balena_complete_containers_all
 			fi
 			;;
 	esac
 }
 
-_docker_container_list() {
-	_docker_container_ls
+_balena_container_list() {
+	_balena_container_ls
 }
 
-_docker_container_ls() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_container_ls() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		ancestor)
 			cur="${cur##*=}"
-			__docker_complete_images
+			__balena_complete_images
 			return
 			;;
 		before)
-			__docker_complete_containers_all --cur "${cur##*=}"
+			__balena_complete_containers_all --cur "${cur##*=}"
 			return
 			;;
 		expose|publish)
 			return
 			;;
 		id)
-			__docker_complete_containers_all --cur "${cur##*=}" --id
+			__balena_complete_containers_all --cur "${cur##*=}" --id
 			return
 			;;
 		health)
@@ -1532,15 +1532,15 @@ _docker_container_ls() {
 			return
 			;;
 		name)
-			__docker_complete_containers_all --cur "${cur##*=}" --name
+			__balena_complete_containers_all --cur "${cur##*=}" --name
 			return
 			;;
 		network)
-			__docker_complete_networks --cur "${cur##*=}"
+			__balena_complete_networks --cur "${cur##*=}"
 			return
 			;;
 		since)
-			__docker_complete_containers_all --cur "${cur##*=}"
+			__balena_complete_containers_all --cur "${cur##*=}"
 			return
 			;;
 		status)
@@ -1548,7 +1548,7 @@ _docker_container_ls() {
 			return
 			;;
 		volume)
-			__docker_complete_volumes --cur "${cur##*=}"
+			__balena_complete_volumes --cur "${cur##*=}"
 			return
 			;;
 	esac
@@ -1556,7 +1556,7 @@ _docker_container_ls() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -S = -W "ancestor before exited expose health id is-task label name network publish since status volume" -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--format|--last|-n)
@@ -1571,36 +1571,36 @@ _docker_container_ls() {
 	esac
 }
 
-_docker_container_pause() {
+_balena_container_pause() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_containers_running
+			__balena_complete_containers_running
 			;;
 	esac
 }
 
-_docker_container_port() {
+_balena_container_port() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_containers_all
+				__balena_complete_containers_all
 			fi
 			;;
 	esac
 }
 
-_docker_container_prune() {
+_balena_container_prune() {
 	case "$prev" in
 		--filter)
 			COMPREPLY=( $( compgen -W "label label! until" -S = -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 	esac
@@ -1612,25 +1612,25 @@ _docker_container_prune() {
 	esac
 }
 
-_docker_container_ps() {
-	_docker_container_ls
+_balena_container_ps() {
+	_balena_container_ls
 }
 
-_docker_container_rename() {
+_balena_container_rename() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_containers_all
+				__balena_complete_containers_all
 			fi
 			;;
 	esac
 }
 
-_docker_container_restart() {
+_balena_container_restart() {
 	case "$prev" in
 		--time|-t)
 			return
@@ -1642,12 +1642,12 @@ _docker_container_restart() {
 			COMPREPLY=( $( compgen -W "--help --time -t" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_containers_all
+			__balena_complete_containers_all
 			;;
 	esac
 }
 
-_docker_container_rm() {
+_balena_container_rm() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--force -f --help --link -l --volumes -v" -- "$cur" ) )
@@ -1656,23 +1656,23 @@ _docker_container_rm() {
 			for arg in "${COMP_WORDS[@]}"; do
 				case "$arg" in
 					--force|-f)
-						__docker_complete_containers_all
+						__balena_complete_containers_all
 						return
 						;;
 				esac
 			done
-			__docker_complete_containers_removable
+			__balena_complete_containers_removable
 			;;
 	esac
 }
 
-_docker_container_run() {
-	_docker_container_run_and_create
+_balena_container_run() {
+	_balena_container_run_and_create
 }
 
-# _docker_container_run_and_create is the combined completion for `_docker_container_run`
-# and `_docker_container_create`
-_docker_container_run_and_create() {
+# _balena_container_run_and_create is the combined completion for `_balena_container_run`
+# and `_balena_container_create`
+_balena_container_run_and_create() {
 	local options_with_args="
 		--add-host
 		--attach -a
@@ -1751,7 +1751,7 @@ _docker_container_run_and_create() {
 		--volume -v
 		--workdir -w
 	"
-	__docker_daemon_os_is windows && options_with_args+="
+	__balena_daemon_os_is windows && options_with_args+="
 		--cpu-count
 		--cpu-percent
 		--io-maxbandwidth
@@ -1781,22 +1781,22 @@ _docker_container_run_and_create() {
 			--rm
 			--sig-proxy=false
 		"
-		__docker_complete_detach_keys && return
+		__balena_complete_detach_keys && return
 	fi
 
 	local all_options="$options_with_args $boolean_options"
 
 
-	__docker_complete_log_driver_options && return
-	__docker_complete_restart && return
+	__balena_complete_log_driver_options && return
+	__balena_complete_restart && return
 
-	local key=$(__docker_map_key_of_current_option '--security-opt')
+	local key=$(__balena_map_key_of_current_option '--security-opt')
 	case "$key" in
 		label)
 			[[ $cur == *: ]] && return
 			COMPREPLY=( $( compgen -W "user: role: type: level: disable" -- "${cur##*=}") )
 			if [ "${COMPREPLY[*]}" != "disable" ] ; then
-				__docker_nospace
+				__balena_nospace
 			fi
 			return
 			;;
@@ -1812,7 +1812,7 @@ _docker_container_run_and_create() {
 		--add-host)
 			case "$cur" in
 				*:)
-					__docker_complete_resolved_hostname
+					__balena_complete_resolved_hostname
 					return
 					;;
 			esac
@@ -1822,11 +1822,11 @@ _docker_container_run_and_create() {
 			return
 			;;
 		--cap-add)
-			__docker_complete_capabilities_addable
+			__balena_complete_capabilities_addable
 			return
 			;;
 		--cap-drop)
-			__docker_complete_capabilities_droppable
+			__balena_complete_capabilities_droppable
 			return
 			;;
 		--cidfile|--env-file|--label-file)
@@ -1840,11 +1840,11 @@ _docker_container_run_and_create() {
 					;;
 				'')
 					COMPREPLY=( $( compgen -W '/' -- "$cur" ) )
-					__docker_nospace
+					__balena_nospace
 					;;
 				/*)
 					_filedir
-					__docker_nospace
+					__balena_nospace
 					;;
 			esac
 			return
@@ -1852,28 +1852,28 @@ _docker_container_run_and_create() {
 		--env|-e)
 			# we do not append a "=" here because "-e VARNAME" is legal syntax, too
 			COMPREPLY=( $( compgen -e -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--ipc)
 			case "$cur" in
 				*:*)
 					cur="${cur#*:}"
-					__docker_complete_containers_running
+					__balena_complete_containers_running
 					;;
 				*)
 					COMPREPLY=( $( compgen -W 'host container:' -- "$cur" ) )
 					# shellcheck disable=SC2128
 					if [ "$COMPREPLY" = "container:" ]; then
-						__docker_nospace
+						__balena_nospace
 					fi
 					;;
 			esac
 			return
 			;;
 		--isolation)
-			if __docker_daemon_os_is windows ; then
-				__docker_complete_isolation
+			if __balena_daemon_os_is windows ; then
+				__balena_complete_isolation
 				return
 			fi
 			;;
@@ -1882,30 +1882,30 @@ _docker_container_run_and_create() {
 				*:*)
 					;;
 				*)
-					__docker_complete_containers_running
+					__balena_complete_containers_running
 					COMPREPLY=( $( compgen -W "${COMPREPLY[*]}" -S ':' ) )
-					__docker_nospace
+					__balena_nospace
 					;;
 			esac
 			return
 			;;
 		--log-driver)
-			__docker_complete_log_drivers
+			__balena_complete_log_drivers
 			return
 			;;
 		--log-opt)
-			__docker_complete_log_options
+			__balena_complete_log_options
 			return
 			;;
 		--network)
 			case "$cur" in
 				container:*)
-					__docker_complete_containers_all --cur "${cur#*:}"
+					__balena_complete_containers_all --cur "${cur#*:}"
 					;;
 				*)
-					COMPREPLY=( $( compgen -W "$(__docker_plugins_bundled --type Network) $(__docker_networks) container:" -- "$cur") )
+					COMPREPLY=( $( compgen -W "$(__balena_plugins_bundled --type Network) $(__balena_networks) container:" -- "$cur") )
 					if [ "${COMPREPLY[*]}" = "container:" ] ; then
-						__docker_nospace
+						__balena_nospace
 					fi
 					;;
 			esac
@@ -1914,40 +1914,40 @@ _docker_container_run_and_create() {
 		--pid)
 			case "$cur" in
 				*:*)
-					__docker_complete_containers_running --cur "${cur#*:}"
+					__balena_complete_containers_running --cur "${cur#*:}"
 					;;
 				*)
 					COMPREPLY=( $( compgen -W 'host container:' -- "$cur" ) )
 					# shellcheck disable=SC2128
 					if [ "$COMPREPLY" = "container:" ]; then
-						__docker_nospace
+						__balena_nospace
 					fi
 					;;
 			esac
 			return
 			;;
 		--runtime)
-			__docker_complete_runtimes
+			__balena_complete_runtimes
 			return
 			;;
 		--security-opt)
 			COMPREPLY=( $( compgen -W "apparmor= label= no-new-privileges seccomp=" -- "$cur") )
 			if [ "${COMPREPLY[*]}" != "no-new-privileges" ] ; then
-				__docker_nospace
+				__balena_nospace
 			fi
 			return
 			;;
 		--stop-signal)
-			__docker_complete_signals
+			__balena_complete_signals
 			return
 			;;
 		--storage-opt)
 			COMPREPLY=( $( compgen -W "size" -S = -- "$cur") )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--user|-u)
-			__docker_complete_user_group
+			__balena_complete_user_group
 			return
 			;;
 		--userns)
@@ -1955,14 +1955,14 @@ _docker_container_run_and_create() {
 			return
 			;;
 		--volume-driver)
-			__docker_complete_plugins_bundled --type Volume
+			__balena_complete_plugins_bundled --type Volume
 			return
 			;;
 		--volumes-from)
-			__docker_complete_containers_all
+			__balena_complete_containers_all
 			return
 			;;
-		$(__docker_to_extglob "$options_with_args") )
+		$(__balena_to_extglob "$options_with_args") )
 			return
 			;;
 	esac
@@ -1972,25 +1972,25 @@ _docker_container_run_and_create() {
 			COMPREPLY=( $( compgen -W "$all_options" -- "$cur" ) )
 			;;
 		*)
-			local counter=$( __docker_pos_first_nonflag "$( __docker_to_alternatives "$options_with_args" )" )
+			local counter=$( __balena_pos_first_nonflag "$( __balena_to_alternatives "$options_with_args" )" )
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_images
+				__balena_complete_images
 			fi
 			;;
 	esac
 }
 
-_docker_container_start() {
-	__docker_complete_detach_keys && return
+_balena_container_start() {
+	__balena_complete_detach_keys && return
 	# shellcheck disable=SC2078
 	case "$prev" in
 		--checkpoint)
-			if [ __docker_daemon_is_experimental ] ; then
+			if [ __balena_daemon_is_experimental ] ; then
 				return
 			fi
 			;;
 		--checkpoint-dir)
-			if [ __docker_daemon_is_experimental ] ; then
+			if [ __balena_daemon_is_experimental ] ; then
 				_filedir -d
 				return
 			fi
@@ -2000,16 +2000,16 @@ _docker_container_start() {
 	case "$cur" in
 		-*)
 			local options="--attach -a --detach-keys --help --interactive -i"
-			__docker_daemon_is_experimental && options+=" --checkpoint --checkpoint-dir"
+			__balena_daemon_is_experimental && options+=" --checkpoint --checkpoint-dir"
 			COMPREPLY=( $( compgen -W "$options" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_containers_stopped
+			__balena_complete_containers_stopped
 			;;
 	esac
 }
 
-_docker_container_stats() {
+_balena_container_stats() {
 	case "$prev" in
 		--format)
 			return
@@ -2021,12 +2021,12 @@ _docker_container_stats() {
 			COMPREPLY=( $( compgen -W "--all -a --format --help --no-stream" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_containers_running
+			__balena_complete_containers_running
 			;;
 	esac
 }
 
-_docker_container_stop() {
+_balena_container_stop() {
 	case "$prev" in
 		--time|-t)
 			return
@@ -2038,40 +2038,40 @@ _docker_container_stop() {
 			COMPREPLY=( $( compgen -W "--help --time -t" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_containers_running
+			__balena_complete_containers_running
 			;;
 	esac
 }
 
-_docker_container_top() {
+_balena_container_top() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_containers_running
+				__balena_complete_containers_running
 			fi
 			;;
 	esac
 }
 
-_docker_container_unpause() {
+_balena_container_unpause() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_containers_unpauseable
+				__balena_complete_containers_unpauseable
 			fi
 			;;
 	esac
 }
 
-_docker_container_update() {
+_balena_container_update() {
 	local options_with_args="
 		--blkio-weight
 		--cpu-period
@@ -2095,10 +2095,10 @@ _docker_container_update() {
 
 	local all_options="$options_with_args $boolean_options"
 
-	__docker_complete_restart && return
+	__balena_complete_restart && return
 
 	case "$prev" in
-		$(__docker_to_extglob "$options_with_args") )
+		$(__balena_to_extglob "$options_with_args") )
 			return
 			;;
 	esac
@@ -2108,36 +2108,36 @@ _docker_container_update() {
 			COMPREPLY=( $( compgen -W "$all_options" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_containers_all
+			__balena_complete_containers_all
 			;;
 	esac
 }
 
-_docker_container_wait() {
+_balena_container_wait() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_containers_all
+			__balena_complete_containers_all
 			;;
 	esac
 }
 
 
-_docker_commit() {
-	_docker_container_commit
+_balena_commit() {
+	_balena_container_commit
 }
 
-_docker_cp() {
-	_docker_container_cp
+_balena_cp() {
+	_balena_container_cp
 }
 
-_docker_create() {
-	_docker_container_create
+_balena_create() {
+	_balena_container_create
 }
 
-_docker_daemon() {
+_balena_daemon() {
 	local boolean_options="
 		$global_boolean_options
 		--disable-legacy-registry
@@ -2208,9 +2208,9 @@ _docker_daemon() {
 		--userns-remap
 	"
 
-	__docker_complete_log_driver_options && return
+	__balena_complete_log_driver_options && return
 
- 	key=$(__docker_map_key_of_current_option '--cluster-store-opt')
+ 	key=$(__balena_map_key_of_current_option '--cluster-store-opt')
  	case "$key" in
  		kv.*file)
 			cur=${cur##*=}
@@ -2219,7 +2219,7 @@ _docker_daemon() {
  			;;
  	esac
 
- 	local key=$(__docker_map_key_of_current_option '--storage-opt')
+ 	local key=$(__balena_map_key_of_current_option '--storage-opt')
  	case "$key" in
  		dm.blkdiscard|dm.override_udev_sync_check|dm.use_deferred_removal|dm.use_deferred_deletion)
  			COMPREPLY=( $( compgen -W "false true" -- "${cur##*=}" ) )
@@ -2238,17 +2238,17 @@ _docker_daemon() {
 
 	case "$prev" in
 		--authorization-plugin)
-			__docker_complete_plugins_bundled --type Authorization
+			__balena_complete_plugins_bundled --type Authorization
 			return
 			;;
 		--cluster-store)
 			COMPREPLY=( $( compgen -W "consul etcd zk" -S "://" -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--cluster-store-opt)
 			COMPREPLY=( $( compgen -W "discovery.heartbeat discovery.ttl kv.cacertfile kv.certfile kv.keyfile kv.path" -S = -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--config-file|--containerd|--init-path|--pidfile|-p|--tlscacert|--tlscert|--tlskey|--userland-proxy-path)
@@ -2260,7 +2260,7 @@ _docker_daemon() {
 			return
 			;;
 		--log-driver)
-			__docker_complete_log_drivers
+			__balena_complete_log_drivers
 			return
 			;;
 		--storage-driver|-s)
@@ -2294,7 +2294,7 @@ _docker_daemon() {
 
 			local all_options="$btrfs_options $devicemapper_options $overlay2_options $zfs_options"
 
-			case $(__docker_value_of_option '--storage-driver|-s') in
+			case $(__balena_value_of_option '--storage-driver|-s') in
 				'')
 					COMPREPLY=( $( compgen -W "$all_options" -S = -- "$cur" ) )
 					;;
@@ -2314,21 +2314,21 @@ _docker_daemon() {
 					return
 					;;
 			esac
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--log-level|-l)
-			__docker_complete_log_levels
+			__balena_complete_log_levels
 			return
 			;;
 		--log-opt)
-			__docker_complete_log_options
+			__balena_complete_log_options
 			return
 			;;
 		--metrics-addr)
-			__docker_complete_local_ips
-			__docker_append_to_completions ":"
-			__docker_nospace
+			__balena_complete_local_ips
+			__balena_append_to_completions ":"
+			__balena_nospace
 			return
 			;;
 		--seccomp-profile)
@@ -2336,14 +2336,14 @@ _docker_daemon() {
 			return
 			;;
 		--swarm-default-advertise-addr)
-			__docker_complete_local_interfaces
+			__balena_complete_local_interfaces
 			return
 			;;
 		--userns-remap)
-			__docker_complete_user_group
+			__balena_complete_user_group
 			return
 			;;
-		$(__docker_to_extglob "$options_with_args") )
+		$(__balena_to_extglob "$options_with_args") )
 			return
 			;;
 	esac
@@ -2355,39 +2355,39 @@ _docker_daemon() {
 	esac
 }
 
-_docker_deploy() {
-	__docker_daemon_is_experimental && _docker_stack_deploy
+_balena_deploy() {
+	__balena_daemon_is_experimental && _balena_stack_deploy
 }
 
-_docker_diff() {
-	_docker_container_diff
+_balena_diff() {
+	_balena_container_diff
 }
 
-_docker_events() {
-	_docker_system_events
+_balena_events() {
+	_balena_system_events
 }
 
-_docker_exec() {
-	_docker_container_exec
+_balena_exec() {
+	_balena_container_exec
 }
 
-_docker_export() {
-	_docker_container_export
+_balena_export() {
+	_balena_container_export
 }
 
-_docker_help() {
-	local counter=$(__docker_pos_first_nonflag)
+_balena_help() {
+	local counter=$(__balena_pos_first_nonflag)
 	if [ "$cword" -eq "$counter" ]; then
 		COMPREPLY=( $( compgen -W "${commands[*]}" -- "$cur" ) )
 	fi
 }
 
-_docker_history() {
-	_docker_image_history
+_balena_history() {
+	_balena_image_history
 }
 
 
-_docker_image() {
+_balena_image() {
 	local subcommands="
 		build
 		history
@@ -2408,7 +2408,7 @@ _docker_image() {
 		remove
 		rmi
 	"
-	__docker_subcommands "$subcommands $aliases" && return
+	__balena_subcommands "$subcommands $aliases" && return
 
 	case "$cur" in
 		-*)
@@ -2420,7 +2420,7 @@ _docker_image() {
 	esac
 }
 
-_docker_image_build() {
+_balena_image_build() {
 	local options_with_args="
 		--add-host
 		--build-arg
@@ -2441,7 +2441,7 @@ _docker_image_build() {
 		--tag -t
 		--ulimit
 	"
-	__docker_daemon_os_is windows && options_with_args+="
+	__balena_daemon_os_is windows && options_with_args+="
 		--isolation
 	"
 
@@ -2455,7 +2455,7 @@ _docker_image_build() {
 		--quiet -q
 		--rm
 	"
-	__docker_daemon_is_experimental && boolean_options+="--squash"
+	__balena_daemon_is_experimental && boolean_options+="--squash"
 
 	local all_options="$options_with_args $boolean_options"
 
@@ -2463,18 +2463,18 @@ _docker_image_build() {
 		--add-host)
 			case "$cur" in
 				*:)
-					__docker_complete_resolved_hostname
+					__balena_complete_resolved_hostname
 					return
 					;;
 			esac
 			;;
 		--build-arg)
 			COMPREPLY=( $( compgen -e -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--cache-from)
-			__docker_complete_image_repos_and_tags
+			__balena_complete_image_repos_and_tags
 			return
 			;;
 		--file|-f|--iidfile)
@@ -2482,30 +2482,30 @@ _docker_image_build() {
 			return
 			;;
 		--isolation)
-			if __docker_daemon_os_is windows ; then
-				__docker_complete_isolation
+			if __balena_daemon_os_is windows ; then
+				__balena_complete_isolation
 				return
 			fi
 			;;
 		--network)
 			case "$cur" in
 				container:*)
-					__docker_complete_containers_all --cur "${cur#*:}"
+					__balena_complete_containers_all --cur "${cur#*:}"
 					;;
 				*)
-					COMPREPLY=( $( compgen -W "$(__docker_plugins_bundled --type Network) $(__docker_networks) container:" -- "$cur") )
+					COMPREPLY=( $( compgen -W "$(__balena_plugins_bundled --type Network) $(__balena_networks) container:" -- "$cur") )
 					if [ "${COMPREPLY[*]}" = "container:" ] ; then
-						__docker_nospace
+						__balena_nospace
 					fi
 					;;
 			esac
 			return
 			;;
 		--tag|-t)
-			__docker_complete_image_repos_and_tags
+			__balena_complete_image_repos_and_tags
 			return
 			;;
-		$(__docker_to_extglob "$options_with_args") )
+		$(__balena_to_extglob "$options_with_args") )
 			return
 			;;
 	esac
@@ -2515,7 +2515,7 @@ _docker_image_build() {
 			COMPREPLY=( $( compgen -W "$all_options" -- "$cur" ) )
 			;;
 		*)
-			local counter=$( __docker_pos_first_nonflag "$( __docker_to_alternatives "$options_with_args" )" )
+			local counter=$( __balena_pos_first_nonflag "$( __balena_to_alternatives "$options_with_args" )" )
 			if [ "$cword" -eq "$counter" ]; then
 				_filedir -d
 			fi
@@ -2523,7 +2523,7 @@ _docker_image_build() {
 	esac
 }
 
-_docker_image_history() {
+_balena_image_history() {
 	case "$prev" in
 		--format)
 			return
@@ -2535,19 +2535,19 @@ _docker_image_history() {
 			COMPREPLY=( $( compgen -W "--format --help --human=false -H=false --no-trunc --quiet -q" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_images
+				__balena_complete_images
 			fi
 			;;
 	esac
 }
 
-_docker_image_images() {
-	_docker_image_ls
+_balena_image_images() {
+	_balena_image_ls
 }
 
-_docker_image_import() {
+_balena_image_import() {
 	case "$prev" in
 		--change|-c|--message|-m)
 			return
@@ -2559,25 +2559,25 @@ _docker_image_import() {
 			COMPREPLY=( $( compgen -W "--change -c --help --message -m" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--change|-c|--message|-m')
+			local counter=$(__balena_pos_first_nonflag '--change|-c|--message|-m')
 			if [ "$cword" -eq "$counter" ]; then
 				return
 			fi
 			(( counter++ ))
 
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_image_repos_and_tags
+				__balena_complete_image_repos_and_tags
 				return
 			fi
 			;;
 	esac
 }
 
-_docker_image_inspect() {
-	_docker_inspect --type image
+_balena_image_inspect() {
+	_balena_inspect --type image
 }
 
-_docker_image_load() {
+_balena_image_load() {
 	case "$prev" in
 		--input|-i)
 			_filedir
@@ -2592,16 +2592,16 @@ _docker_image_load() {
 	esac
 }
 
-_docker_image_list() {
-	_docker_image_ls
+_balena_image_list() {
+	_balena_image_ls
 }
 
-_docker_image_ls() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_image_ls() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		before|since|reference)
 			cur="${cur##*=}"
-			__docker_complete_images
+			__balena_complete_images
 			return
 			;;
 		dangling)
@@ -2616,7 +2616,7 @@ _docker_image_ls() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -S = -W "before dangling label reference since" -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
                 --format)
@@ -2632,16 +2632,16 @@ _docker_image_ls() {
 			return
 			;;
 		*)
-			__docker_complete_image_repos
+			__balena_complete_image_repos
 			;;
 	esac
 }
 
-_docker_image_prune() {
+_balena_image_prune() {
 	case "$prev" in
 		--filter)
 			COMPREPLY=( $( compgen -W "label label! until" -S = -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 	esac
@@ -2653,62 +2653,62 @@ _docker_image_prune() {
 	esac
 }
 
-_docker_image_pull() {
+_balena_image_pull() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--all-tags -a --disable-content-trust=false --help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
 				for arg in "${COMP_WORDS[@]}"; do
 					case "$arg" in
 						--all-tags|-a)
-							__docker_complete_image_repos
+							__balena_complete_image_repos
 							return
 							;;
 					esac
 				done
-				__docker_complete_image_repos_and_tags
+				__balena_complete_image_repos_and_tags
 			fi
 			;;
 	esac
 }
 
-_docker_image_push() {
+_balena_image_push() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--disable-content-trust=false --help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_image_repos_and_tags
+				__balena_complete_image_repos_and_tags
 			fi
 			;;
 	esac
 }
 
-_docker_image_remove() {
-	_docker_image_rm
+_balena_image_remove() {
+	_balena_image_rm
 }
 
-_docker_image_rm() {
+_balena_image_rm() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--force -f --help --no-prune" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_images
+			__balena_complete_images
 			;;
 	esac
 }
 
-_docker_image_rmi() {
-	_docker_image_rm
+_balena_image_rmi() {
+	_balena_image_rm
 }
 
-_docker_image_save() {
+_balena_image_save() {
 	case "$prev" in
 		--output|-o)
 			_filedir
@@ -2721,27 +2721,27 @@ _docker_image_save() {
 			COMPREPLY=( $( compgen -W "--help --output -o" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_images
+			__balena_complete_images
 			;;
 	esac
 }
 
-_docker_image_tag() {
+_balena_image_tag() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_image_repos_and_tags
+				__balena_complete_image_repos_and_tags
 				return
 			fi
 			(( counter++ ))
 
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_image_repos_and_tags
+				__balena_complete_image_repos_and_tags
 				return
 			fi
 			;;
@@ -2749,19 +2749,19 @@ _docker_image_tag() {
 }
 
 
-_docker_images() {
-	_docker_image_ls
+_balena_images() {
+	_balena_image_ls
 }
 
-_docker_import() {
-	_docker_image_import
+_balena_import() {
+	_balena_image_import
 }
 
-_docker_info() {
-	_docker_system_info
+_balena_info() {
+	_balena_system_info
 }
 
-_docker_inspect() {
+_balena_inspect() {
 	local preselected_type
 	local type
 
@@ -2769,7 +2769,7 @@ _docker_inspect() {
 		preselected_type=yes
 		type="$2"
 	else
-		type=$(__docker_value_of_option --type)
+		type=$(__balena_value_of_option --type)
 	fi
 
 	case "$prev" in
@@ -2796,53 +2796,53 @@ _docker_inspect() {
 			case "$type" in
 				'')
 					COMPREPLY=( $( compgen -W "
-						$(__docker_containers --all)
-						$(__docker_images)
-						$(__docker_networks)
-						$(__docker_nodes)
-						$(__docker_plugins_installed)
-						$(__docker_secrets)
-						$(__docker_services)
-						$(__docker_volumes)
+						$(__balena_containers --all)
+						$(__balena_images)
+						$(__balena_networks)
+						$(__balena_nodes)
+						$(__balena_plugins_installed)
+						$(__balena_secrets)
+						$(__balena_services)
+						$(__balena_volumes)
 					" -- "$cur" ) )
 					;;
 				container)
-					__docker_complete_containers_all
+					__balena_complete_containers_all
 					;;
 				image)
-					__docker_complete_images
+					__balena_complete_images
 					;;
 				network)
-					__docker_complete_networks
+					__balena_complete_networks
 					;;
 				node)
-					__docker_complete_nodes
+					__balena_complete_nodes
 					;;
 				plugin)
-					__docker_complete_plugins_installed
+					__balena_complete_plugins_installed
 					;;
 				secret)
-					__docker_complete_secrets
+					__balena_complete_secrets
 					;;
 				service)
-					__docker_complete_services
+					__balena_complete_services
 					;;
 				volume)
-					__docker_complete_volumes
+					__balena_complete_volumes
 					;;
 			esac
 	esac
 }
 
-_docker_kill() {
-	_docker_container_kill
+_balena_kill() {
+	_balena_container_kill
 }
 
-_docker_load() {
-	_docker_image_load
+_balena_load() {
+	_balena_image_load
 }
 
-_docker_login() {
+_balena_login() {
 	case "$prev" in
 		--password|-p|--username|-u)
 			return
@@ -2856,7 +2856,7 @@ _docker_login() {
 	esac
 }
 
-_docker_logout() {
+_balena_logout() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
@@ -2864,11 +2864,11 @@ _docker_logout() {
 	esac
 }
 
-_docker_logs() {
-	_docker_container_logs
+_balena_logs() {
+	_balena_container_logs
 }
 
-_docker_network_connect() {
+_balena_network_connect() {
 	local options_with_args="
 		--alias
 		--ip
@@ -2887,14 +2887,14 @@ _docker_network_connect() {
 				*:*)
 					;;
 				*)
-					__docker_complete_containers_running
+					__balena_complete_containers_running
 					COMPREPLY=( $( compgen -W "${COMPREPLY[*]}" -S ':' ) )
-					__docker_nospace
+					__balena_nospace
 					;;
 			esac
 			return
 			;;
-		$(__docker_to_extglob "$options_with_args") )
+		$(__balena_to_extglob "$options_with_args") )
 			return
 			;;
 	esac
@@ -2904,28 +2904,28 @@ _docker_network_connect() {
 			COMPREPLY=( $( compgen -W "$boolean_options $options_with_args" -- "$cur" ) )
 			;;
 		*)
-			local counter=$( __docker_pos_first_nonflag "$( __docker_to_alternatives "$options_with_args" )" )
+			local counter=$( __balena_pos_first_nonflag "$( __balena_to_alternatives "$options_with_args" )" )
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_networks
+				__balena_complete_networks
 			elif [ "$cword" -eq "$((counter + 1))" ]; then
-				__docker_complete_containers_all
+				__balena_complete_containers_all
 			fi
 			;;
 	esac
 }
 
-_docker_network_create() {
+_balena_network_create() {
 	case "$prev" in
 		--aux-address|--gateway|--ip-range|--ipam-opt|--ipv6|--opt|-o|--subnet)
 			return
 			;;
 		--config-from)
-			__docker_complete_networks
+			__balena_complete_networks
 			return
 			;;
 		--driver|-d)
-			# remove drivers that allow one instance only, add drivers missing in `docker info`
-			__docker_complete_plugins_bundled --type Network --remove host --remove null --add macvlan
+			# remove drivers that allow one instance only, add drivers missing in `balena info`
+			__balena_complete_plugins_bundled --type Network --remove host --remove null --add macvlan
 			return
 			;;
 		--ipam-driver)
@@ -2948,23 +2948,23 @@ _docker_network_create() {
 	esac
 }
 
-_docker_network_disconnect() {
+_balena_network_disconnect() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_networks
+				__balena_complete_networks
 			elif [ "$cword" -eq "$((counter + 1))" ]; then
-				__docker_complete_containers_in_network "$prev"
+				__balena_complete_containers_in_network "$prev"
 			fi
 			;;
 	esac
 }
 
-_docker_network_inspect() {
+_balena_network_inspect() {
 	case "$prev" in
 		--format|-f)
 			return
@@ -2976,23 +2976,23 @@ _docker_network_inspect() {
 			COMPREPLY=( $( compgen -W "--format -f --help --verbose" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_networks
+			__balena_complete_networks
 	esac
 }
 
-_docker_network_ls() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_network_ls() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		driver)
-			__docker_complete_plugins_bundled --cur "${cur##*=}" --type Network --add macvlan
+			__balena_complete_plugins_bundled --cur "${cur##*=}" --type Network --add macvlan
 			return
 			;;
 		id)
-			__docker_complete_networks --cur "${cur##*=}" --id
+			__balena_complete_networks --cur "${cur##*=}" --id
 			return
 			;;
 		name)
-			__docker_complete_networks --cur "${cur##*=}" --name
+			__balena_complete_networks --cur "${cur##*=}" --name
 			return
 			;;
 		scope)
@@ -3008,7 +3008,7 @@ _docker_network_ls() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -S = -W "driver id label name scope type" -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--format)
@@ -3023,11 +3023,11 @@ _docker_network_ls() {
 	esac
 }
 
-_docker_network_prune() {
+_balena_network_prune() {
 	case "$prev" in
 		--filter)
 			COMPREPLY=( $( compgen -W "label label! until" -S = -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 	esac
@@ -3039,17 +3039,17 @@ _docker_network_prune() {
 	esac
 }
 
-_docker_network_rm() {
+_balena_network_rm() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_networks --filter type=custom
+			__balena_complete_networks --filter type=custom
 	esac
 }
 
-_docker_network() {
+_balena_network() {
 	local subcommands="
 		connect
 		create
@@ -3063,7 +3063,7 @@ _docker_network() {
 		list
 		remove
 	"
-	__docker_subcommands "$subcommands $aliases" && return
+	__balena_subcommands "$subcommands $aliases" && return
 
 	case "$cur" in
 		-*)
@@ -3075,7 +3075,7 @@ _docker_network() {
 	esac
 }
 
-_docker_service() {
+_balena_service() {
 	local subcommands="
 		create
 		inspect
@@ -3091,7 +3091,7 @@ _docker_service() {
 		list
 		remove
 	"
-	__docker_subcommands "$subcommands $aliases" && return
+	__balena_subcommands "$subcommands $aliases" && return
 
 	case "$cur" in
 		-*)
@@ -3103,11 +3103,11 @@ _docker_service() {
 	esac
 }
 
-_docker_service_create() {
-	_docker_service_update_and_create
+_balena_service_create() {
+	_balena_service_update_and_create
 }
 
-_docker_service_inspect() {
+_balena_service_inspect() {
 	case "$prev" in
 		--format|-f)
 			return
@@ -3119,11 +3119,11 @@ _docker_service_inspect() {
 			COMPREPLY=( $( compgen -W "--format -f --help --pretty" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_services
+			__balena_complete_services
 	esac
 }
 
-_docker_service_logs() {
+_balena_service_logs() {
 	case "$prev" in
 		--since|--tail)
 			return
@@ -3135,23 +3135,23 @@ _docker_service_logs() {
 			COMPREPLY=( $( compgen -W "--follow -f --help --no-resolve --no-task-ids --no-trunc --since --tail --timestamps -t" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--since|--tail')
+			local counter=$(__balena_pos_first_nonflag '--since|--tail')
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_services_and_tasks
+				__balena_complete_services_and_tasks
 			fi
 			;;
 	esac
 }
 
-_docker_service_list() {
-	_docker_service_ls
+_balena_service_list() {
+	_balena_service_ls
 }
 
-_docker_service_ls() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_service_ls() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		id)
-			__docker_complete_services --cur "${cur##*=}" --id
+			__balena_complete_services --cur "${cur##*=}" --id
 			return
 			;;
 		mode)
@@ -3159,7 +3159,7 @@ _docker_service_ls() {
 			return
 			;;
 		name)
-			__docker_complete_services --cur "${cur##*=}" --name
+			__balena_complete_services --cur "${cur##*=}" --name
 			return
 			;;
 	esac
@@ -3167,7 +3167,7 @@ _docker_service_ls() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -W "id label mode name" -S = -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--format)
@@ -3182,46 +3182,46 @@ _docker_service_ls() {
 	esac
 }
 
-_docker_service_remove() {
-	_docker_service_rm
+_balena_service_remove() {
+	_balena_service_rm
 }
 
-_docker_service_rm() {
+_balena_service_rm() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_services
+			__balena_complete_services
 	esac
 }
 
-_docker_service_scale() {
+_balena_service_scale() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_services
-			__docker_append_to_completions "="
-			__docker_nospace
+			__balena_complete_services
+			__balena_append_to_completions "="
+			__balena_nospace
 			;;
 	esac
 }
 
-_docker_service_ps() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_service_ps() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		desired-state)
 			COMPREPLY=( $( compgen -W "accepted running shutdown" -- "${cur##*=}" ) )
 			return
 			;;
 		name)
-			__docker_complete_services --cur "${cur##*=}" --name
+			__balena_complete_services --cur "${cur##*=}" --name
 			return
 			;;
 		node)
-			__docker_complete_nodes --cur "${cur##*=}" --add self
+			__balena_complete_nodes --cur "${cur##*=}" --add self
 			return
 			;;
 	esac
@@ -3229,7 +3229,7 @@ _docker_service_ps() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -W "desired-state id name node" -S = -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--format)
@@ -3242,21 +3242,21 @@ _docker_service_ps() {
 			COMPREPLY=( $( compgen -W "--filter -f --format --help --no-resolve --no-trunc --quiet -q" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--filter|-f')
+			local counter=$(__balena_pos_first_nonflag '--filter|-f')
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_services
+				__balena_complete_services
 			fi
 			;;
 	esac
 }
 
-_docker_service_update() {
-	_docker_service_update_and_create
+_balena_service_update() {
+	_balena_service_update_and_create
 }
 
-# _docker_service_update_and_create is the combined completion for `docker service create`
-# and `docker service update`
-_docker_service_update_and_create() {
+# _balena_service_update_and_create is the combined completion for `balena service create`
+# and `balena service update`
+_balena_service_update_and_create() {
 	local options_with_args="
 		--credential-spec
 		--endpoint-mode
@@ -3309,7 +3309,7 @@ _docker_service_update_and_create() {
 		--with-registry-auth
 	"
 
-	__docker_complete_log_driver_options && return
+	__balena_complete_log_driver_options && return
 
 	if [ "$subcommand" = "create" ] ; then
 		options_with_args="$options_with_args
@@ -3332,7 +3332,7 @@ _docker_service_update_and_create() {
 
 		case "$prev" in
 			--config)
-				__docker_complete_configs
+				__balena_complete_configs
 				return
 				;;
 			--env-file)
@@ -3346,7 +3346,7 @@ _docker_service_update_and_create() {
 			--host)
 				case "$cur" in
 					*:)
-						__docker_complete_resolved_hostname
+						__balena_complete_resolved_hostname
 						return
 						;;
 				esac
@@ -3357,11 +3357,11 @@ _docker_service_update_and_create() {
 				;;
 			--placement-pref)
 				COMPREPLY=( $( compgen -W "spread" -S = -- "$cur" ) )
-				__docker_nospace
+				__balena_nospace
 				return
 				;;
 			--secret)
-				__docker_complete_secrets
+				__balena_complete_secrets
 				return
 				;;
 		esac
@@ -3399,7 +3399,7 @@ _docker_service_update_and_create() {
 
 		case "$prev" in
 			--config-add|--config-rm)
-				__docker_complete_configs
+				__balena_complete_configs
 				return
 				;;
 			--group-add|--group-rm)
@@ -3409,36 +3409,36 @@ _docker_service_update_and_create() {
 			--host-add|--host-rm)
 				case "$cur" in
 					*:)
-						__docker_complete_resolved_hostname
+						__balena_complete_resolved_hostname
 						return
 						;;
 				esac
 				;;
 			--image)
-				__docker_complete_image_repos_and_tags
+				__balena_complete_image_repos_and_tags
 				return
 				;;
 			--network-add|--network-rm)
-				__docker_complete_networks
+				__balena_complete_networks
 				return
 				;;
 			--placement-pref-add|--placement-pref-rm)
 				COMPREPLY=( $( compgen -W "spread" -S = -- "$cur" ) )
-				__docker_nospace
+				__balena_nospace
 				return
 				;;
 			--secret-add|--secret-rm)
-				__docker_complete_secrets
+				__balena_complete_secrets
 				return
 				;;
 		esac
 	fi
 
-	local strategy=$(__docker_map_key_of_current_option '--placement-pref|--placement-pref-add|--placement-pref-rm')
+	local strategy=$(__balena_map_key_of_current_option '--placement-pref|--placement-pref-add|--placement-pref-rm')
 	case "$strategy" in
 		spread)
 			COMPREPLY=( $( compgen -W "engine.labels node.labels" -S . -- "${cur##*=}" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 	esac
@@ -3451,19 +3451,19 @@ _docker_service_update_and_create() {
 		--env|-e)
 			# we do not append a "=" here because "-e VARNAME" is legal systax, too
 			COMPREPLY=( $( compgen -e -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--log-driver)
-			__docker_complete_log_drivers
+			__balena_complete_log_drivers
 			return
 			;;
 		--log-opt)
-			__docker_complete_log_options
+			__balena_complete_log_options
 			return
 			;;
 		--network)
-			__docker_complete_networks
+			__balena_complete_networks
 			return
 			;;
 		--restart-condition)
@@ -3475,7 +3475,7 @@ _docker_service_update_and_create() {
 			return
 			;;
 		--stop-signal)
-			__docker_complete_signals
+			__balena_complete_signals
 			return
 			;;
 		--update-failure-action)
@@ -3487,10 +3487,10 @@ _docker_service_update_and_create() {
 			return
 			;;
 		--user|-u)
-			__docker_complete_user_group
+			__balena_complete_user_group
 			return
 			;;
-		$(__docker_to_extglob "$options_with_args") )
+		$(__balena_to_extglob "$options_with_args") )
 			return
 			;;
 	esac
@@ -3500,21 +3500,21 @@ _docker_service_update_and_create() {
 			COMPREPLY=( $( compgen -W "$boolean_options $options_with_args" -- "$cur" ) )
 			;;
 		*)
-			local counter=$( __docker_pos_first_nonflag "$( __docker_to_alternatives "$options_with_args" )" )
+			local counter=$( __balena_pos_first_nonflag "$( __balena_to_alternatives "$options_with_args" )" )
 			if [ "$subcommand" = "update" ] ; then
 				if [ "$cword" -eq "$counter" ]; then
-					__docker_complete_services
+					__balena_complete_services
 				fi
 			else
 				if [ "$cword" -eq "$counter" ]; then
-					__docker_complete_images
+					__balena_complete_images
 				fi
 			fi
 			;;
 	esac
 }
 
-_docker_swarm() {
+_balena_swarm() {
 	local subcommands="
 		ca
 		init
@@ -3525,7 +3525,7 @@ _docker_swarm() {
 		unlock-key
 		update
 	"
-	__docker_subcommands "$subcommands" && return
+	__balena_subcommands "$subcommands" && return
 
 	case "$cur" in
 		-*)
@@ -3537,7 +3537,7 @@ _docker_swarm() {
 	esac
 }
 
-_docker_swarm_ca() {
+_balena_swarm_ca() {
 	case "$prev" in
 		--ca-cert|--ca-key)
 			_filedir
@@ -3555,14 +3555,14 @@ _docker_swarm_ca() {
 	esac
 }
 
-_docker_swarm_init() {
+_balena_swarm_init() {
 	case "$prev" in
 		--advertise-addr)
 			if [[ $cur == *: ]] ; then
 				COMPREPLY=( $( compgen -W "2377" -- "${cur##*:}" ) )
 			else
-				__docker_complete_local_interfaces
-				__docker_nospace
+				__balena_complete_local_interfaces
+				__balena_nospace
 			fi
 			return
 			;;
@@ -3574,15 +3574,15 @@ _docker_swarm_init() {
 			return
 			;;
 		--data-path-addr)
-			__docker_complete_local_interfaces
+			__balena_complete_local_interfaces
 			return
 			;;
 		--listen-addr)
 			if [[ $cur == *: ]] ; then
 				COMPREPLY=( $( compgen -W "2377" -- "${cur##*:}" ) )
 			else
-				__docker_complete_local_interfaces --add 0.0.0.0
-				__docker_nospace
+				__balena_complete_local_interfaces --add 0.0.0.0
+				__balena_nospace
 			fi
 			return
 			;;
@@ -3595,14 +3595,14 @@ _docker_swarm_init() {
 	esac
 }
 
-_docker_swarm_join() {
+_balena_swarm_join() {
 	case "$prev" in
 		--advertise-addr)
 			if [[ $cur == *: ]] ; then
 				COMPREPLY=( $( compgen -W "2377" -- "${cur##*:}" ) )
 			else
-				__docker_complete_local_interfaces
-				__docker_nospace
+				__balena_complete_local_interfaces
+				__balena_nospace
 			fi
 			return
 			;;
@@ -3611,15 +3611,15 @@ _docker_swarm_join() {
 			return
 			;;
 		--data-path-addr)
-			__docker_complete_local_interfaces
+			__balena_complete_local_interfaces
 			return
 			;;
 		--listen-addr)
 			if [[ $cur == *: ]] ; then
 				COMPREPLY=( $( compgen -W "2377" -- "${cur##*:}" ) )
 			else
-				__docker_complete_local_interfaces --add 0.0.0.0
-				__docker_nospace
+				__balena_complete_local_interfaces --add 0.0.0.0
+				__balena_nospace
 			fi
 			return
 			;;
@@ -3638,13 +3638,13 @@ _docker_swarm_join() {
 	esac
 }
 
-_docker_swarm_join_token() {
+_balena_swarm_join_token() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help --quiet -q --rotate" -- "$cur" ) )
 			;;
 		*)
-			local counter=$( __docker_pos_first_nonflag )
+			local counter=$( __balena_pos_first_nonflag )
 			if [ "$cword" -eq "$counter" ]; then
 				COMPREPLY=( $( compgen -W "manager worker" -- "$cur" ) )
 			fi
@@ -3652,7 +3652,7 @@ _docker_swarm_join_token() {
 	esac
 }
 
-_docker_swarm_leave() {
+_balena_swarm_leave() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--force -f --help" -- "$cur" ) )
@@ -3660,7 +3660,7 @@ _docker_swarm_leave() {
 	esac
 }
 
-_docker_swarm_unlock() {
+_balena_swarm_unlock() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
@@ -3668,7 +3668,7 @@ _docker_swarm_unlock() {
 	esac
 }
 
-_docker_swarm_unlock_key() {
+_balena_swarm_unlock_key() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help --quiet -q --rotate" -- "$cur" ) )
@@ -3676,7 +3676,7 @@ _docker_swarm_unlock_key() {
 	esac
 }
 
-_docker_swarm_update() {
+_balena_swarm_update() {
 	case "$prev" in
 		--cert-expiry|--dispatcher-heartbeat|--external-ca|--max-snapshots|--snapshot-interval|--task-history-limit)
 			return
@@ -3690,7 +3690,7 @@ _docker_swarm_update() {
 	esac
 }
 
-_docker_node() {
+_balena_node() {
 	local subcommands="
 		demote
 		inspect
@@ -3704,7 +3704,7 @@ _docker_node() {
 		list
 		remove
 	"
-	__docker_subcommands "$subcommands $aliases" && return
+	__balena_subcommands "$subcommands $aliases" && return
 
 	case "$cur" in
 		-*)
@@ -3716,17 +3716,17 @@ _docker_node() {
 	esac
 }
 
-_docker_node_demote() {
+_balena_node_demote() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_nodes --filter role=manager
+			__balena_complete_nodes --filter role=manager
 	esac
 }
 
-_docker_node_inspect() {
+_balena_node_inspect() {
 	case "$prev" in
 		--format|-f)
 			return
@@ -3738,19 +3738,19 @@ _docker_node_inspect() {
 			COMPREPLY=( $( compgen -W "--format -f --help --pretty" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_nodes --add self
+			__balena_complete_nodes --add self
 	esac
 }
 
-_docker_node_list() {
-	_docker_node_ls
+_balena_node_list() {
+	_balena_node_ls
 }
 
-_docker_node_ls() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_node_ls() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		id)
-			__docker_complete_nodes --cur "${cur##*=}" --id
+			__balena_complete_nodes --cur "${cur##*=}" --id
 			return
 			;;
 		membership)
@@ -3758,7 +3758,7 @@ _docker_node_ls() {
 			return
 			;;
 		name)
-			__docker_complete_nodes --cur "${cur##*=}" --name
+			__balena_complete_nodes --cur "${cur##*=}" --name
 			return
 			;;
 		role)
@@ -3770,7 +3770,7 @@ _docker_node_ls() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -W "id label membership name role" -S = -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--format)
@@ -3785,39 +3785,39 @@ _docker_node_ls() {
 	esac
 }
 
-_docker_node_promote() {
+_balena_node_promote() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_nodes --filter role=worker
+			__balena_complete_nodes --filter role=worker
 	esac
 }
 
-_docker_node_remove() {
-	_docker_node_rm
+_balena_node_remove() {
+	_balena_node_rm
 }
 
-_docker_node_rm() {
+_balena_node_rm() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--force -f --help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_nodes
+			__balena_complete_nodes
 	esac
 }
 
-_docker_node_ps() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_node_ps() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		desired-state)
 			COMPREPLY=( $( compgen -W "accepted running shutdown" -- "${cur##*=}" ) )
 			return
 			;;
 		name)
-			__docker_complete_services --cur "${cur##*=}" --name
+			__balena_complete_services --cur "${cur##*=}" --name
 			return
 			;;
 	esac
@@ -3825,7 +3825,7 @@ _docker_node_ps() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -W "desired-state id label name" -S = -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--format)
@@ -3838,12 +3838,12 @@ _docker_node_ps() {
 			COMPREPLY=( $( compgen -W "--filter -f --format --help --no-resolve --no-trunc --quiet -q" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_nodes --add self
+			__balena_complete_nodes --add self
 			;;
 	esac
 }
 
-_docker_node_update() {
+_balena_node_update() {
 	case "$prev" in
 		--availability)
 			COMPREPLY=( $( compgen -W "active drain pause" -- "$cur" ) )
@@ -3863,19 +3863,19 @@ _docker_node_update() {
 			COMPREPLY=( $( compgen -W "--availability --help --label-add --label-rm --role" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--availability|--label-add|--label-rm|--role')
+			local counter=$(__balena_pos_first_nonflag '--availability|--label-add|--label-rm|--role')
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_nodes
+				__balena_complete_nodes
 			fi
 			;;
 	esac
 }
 
-_docker_pause() {
-	_docker_container_pause
+_balena_pause() {
+	_balena_container_pause
 }
 
-_docker_plugin() {
+_balena_plugin() {
 	local subcommands="
 		create
 		disable
@@ -3892,7 +3892,7 @@ _docker_plugin() {
 		list
 		remove
 	"
-	__docker_subcommands "$subcommands $aliases" && return
+	__balena_subcommands "$subcommands $aliases" && return
 
 	case "$cur" in
 		-*)
@@ -3904,13 +3904,13 @@ _docker_plugin() {
 	esac
 }
 
-_docker_plugin_create() {
+_balena_plugin_create() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--compress --help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
 				# reponame
 				return
@@ -3921,21 +3921,21 @@ _docker_plugin_create() {
 	esac
 }
 
-_docker_plugin_disable() {
+_balena_plugin_disable() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--force -f --help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_plugins_installed --filter enabled=true
+				__balena_complete_plugins_installed --filter enabled=true
 			fi
 			;;
 	esac
 }
 
-_docker_plugin_enable() {
+_balena_plugin_enable() {
 	case "$prev" in
 		--timeout)
 			return
@@ -3947,15 +3947,15 @@ _docker_plugin_enable() {
 			COMPREPLY=( $( compgen -W "--help --timeout" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--timeout')
+			local counter=$(__balena_pos_first_nonflag '--timeout')
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_plugins_installed --filter enabled=false
+				__balena_complete_plugins_installed --filter enabled=false
 			fi
 			;;
 	esac
 }
 
-_docker_plugin_inspect() {
+_balena_plugin_inspect() {
 	case "$prev" in
 		--format|f)
 			return
@@ -3967,12 +3967,12 @@ _docker_plugin_inspect() {
 			COMPREPLY=( $( compgen -W "--format -f --help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_plugins_installed
+			__balena_complete_plugins_installed
 			;;
 	esac
 }
 
-_docker_plugin_install() {
+_balena_plugin_install() {
 	case "$prev" in
 		--alias)
 			return
@@ -3986,12 +3986,12 @@ _docker_plugin_install() {
 	esac
 }
 
-_docker_plugin_list() {
-	_docker_plugin_ls
+_balena_plugin_list() {
+	_balena_plugin_ls
 }
 
-_docker_plugin_ls() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_plugin_ls() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		capability)
 			COMPREPLY=( $( compgen -W "authz ipamdriver logdriver metricscollector networkdriver volumedriver" -- "${cur##*=}" ) )
@@ -4006,7 +4006,7 @@ _docker_plugin_ls() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -S = -W "capability enabled" -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--format)
@@ -4021,111 +4021,111 @@ _docker_plugin_ls() {
 	esac
 }
 
-_docker_plugin_push() {
+_balena_plugin_push() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_plugins_installed
+				__balena_complete_plugins_installed
 			fi
 			;;
 	esac
 }
 
-_docker_plugin_remove() {
-	_docker_plugin_rm
+_balena_plugin_remove() {
+	_balena_plugin_rm
 }
 
-_docker_plugin_rm() {
+_balena_plugin_rm() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--force -f --help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_plugins_installed
+			__balena_complete_plugins_installed
 			;;
 	esac
 }
 
-_docker_plugin_set() {
+_balena_plugin_set() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_plugins_installed
+				__balena_complete_plugins_installed
 			fi
 			;;
 	esac
 }
 
-_docker_plugin_upgrade() {
+_balena_plugin_upgrade() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--disable-content-trust --grant-all-permissions --help --skip-remote-check" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag)
+			local counter=$(__balena_pos_first_nonflag)
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_plugins_installed
+				__balena_complete_plugins_installed
 				__ltrim_colon_completions "$cur"
 			elif [ "$cword" -eq  "$((counter + 1))" ]; then
-				local plugin_images="$(__docker_plugins_installed)"
+				local plugin_images="$(__balena_plugins_installed)"
 				COMPREPLY=( $(compgen -S : -W "${plugin_images%:*}" -- "$cur") )
-				__docker_nospace
+				__balena_nospace
 			fi
 			;;
 	esac
 }
 
 
-_docker_port() {
-	_docker_container_port
+_balena_port() {
+	_balena_container_port
 }
 
-_docker_ps() {
-	_docker_container_ls
+_balena_ps() {
+	_balena_container_ls
 }
 
-_docker_pull() {
-	_docker_image_pull
+_balena_pull() {
+	_balena_image_pull
 }
 
-_docker_push() {
-	_docker_image_push
+_balena_push() {
+	_balena_image_push
 }
 
-_docker_rename() {
-	_docker_container_rename
+_balena_rename() {
+	_balena_container_rename
 }
 
-_docker_restart() {
-	_docker_container_restart
+_balena_restart() {
+	_balena_container_restart
 }
 
-_docker_rm() {
-	_docker_container_rm
+_balena_rm() {
+	_balena_container_rm
 }
 
-_docker_rmi() {
-	_docker_image_rm
+_balena_rmi() {
+	_balena_image_rm
 }
 
-_docker_run() {
-	_docker_container_run
+_balena_run() {
+	_balena_container_run
 }
 
-_docker_save() {
-	_docker_image_save
+_balena_save() {
+	_balena_image_save
 }
 
 
-_docker_secret() {
+_balena_secret() {
 	local subcommands="
 		create
 		inspect
@@ -4136,7 +4136,7 @@ _docker_secret() {
 		list
 		remove
 	"
-	__docker_subcommands "$subcommands $aliases" && return
+	__balena_subcommands "$subcommands $aliases" && return
 
 	case "$cur" in
 		-*)
@@ -4148,7 +4148,7 @@ _docker_secret() {
 	esac
 }
 
-_docker_secret_create() {
+_balena_secret_create() {
 	case "$prev" in
 		--label|-l)
 			return
@@ -4162,7 +4162,7 @@ _docker_secret_create() {
 	esac
 }
 
-_docker_secret_inspect() {
+_balena_secret_inspect() {
 	case "$prev" in
 		--format|-f)
 			return
@@ -4174,24 +4174,24 @@ _docker_secret_inspect() {
 			COMPREPLY=( $( compgen -W "--format -f --help --pretty" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_secrets
+			__balena_complete_secrets
 			;;
 	esac
 }
 
-_docker_secret_list() {
-	_docker_secret_ls
+_balena_secret_list() {
+	_balena_secret_ls
 }
 
-_docker_secret_ls() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_secret_ls() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		id)
-			__docker_complete_secrets --cur "${cur##*=}" --id
+			__balena_complete_secrets --cur "${cur##*=}" --id
 			return
 			;;
 		name)
-			__docker_complete_secrets --cur "${cur##*=}" --name
+			__balena_complete_secrets --cur "${cur##*=}" --name
 			return
 			;;
 	esac
@@ -4199,7 +4199,7 @@ _docker_secret_ls() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -S = -W "id label name" -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--format)
@@ -4214,25 +4214,25 @@ _docker_secret_ls() {
 	esac
 }
 
-_docker_secret_remove() {
-	_docker_secret_rm
+_balena_secret_remove() {
+	_balena_secret_rm
 }
 
-_docker_secret_rm() {
+_balena_secret_rm() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_secrets
+			__balena_complete_secrets
 			;;
 	esac
 }
 
 
 
-_docker_search() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_search() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		is-automated)
 			COMPREPLY=( $( compgen -W "false true" -- "${cur##*=}" ) )
@@ -4247,7 +4247,7 @@ _docker_search() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -S = -W "is-automated is-official stars" -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--limit)
@@ -4263,7 +4263,7 @@ _docker_search() {
 }
 
 
-_docker_stack() {
+_balena_stack() {
 	local subcommands="
 		deploy
 		ls
@@ -4277,7 +4277,7 @@ _docker_stack() {
 		remove
 		up
 	"
-	__docker_subcommands "$subcommands $aliases" && return
+	__balena_subcommands "$subcommands $aliases" && return
 
 	case "$cur" in
 		-*)
@@ -4289,10 +4289,10 @@ _docker_stack() {
 	esac
 }
 
-_docker_stack_deploy() {
+_balena_stack_deploy() {
 	case "$prev" in
 		--bundle-file)
-			if __docker_daemon_is_experimental ; then
+			if __balena_daemon_is_experimental ; then
 				_filedir dab
 				return
 			fi
@@ -4306,21 +4306,21 @@ _docker_stack_deploy() {
 	case "$cur" in
 		-*)
 			local options="--compose-file -c --help --prune --with-registry-auth"
-			__docker_daemon_is_experimental && options+=" --bundle-file"
+			__balena_daemon_is_experimental && options+=" --bundle-file"
 			COMPREPLY=( $( compgen -W "$options" -- "$cur" ) )
 			;;
 	esac
 }
 
-_docker_stack_down() {
-	_docker_stack_rm
+_balena_stack_down() {
+	_balena_stack_rm
 }
 
-_docker_stack_list() {
-	_docker_stack_ls
+_balena_stack_list() {
+	_balena_stack_ls
 }
 
-_docker_stack_ls() {
+_balena_stack_ls() {
 	case "$prev" in
 		--format)
 			return
@@ -4334,19 +4334,19 @@ _docker_stack_ls() {
 	esac
 }
 
-_docker_stack_ps() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_stack_ps() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		desired-state)
 			COMPREPLY=( $( compgen -W "accepted running shutdown" -- "${cur##*=}" ) )
 			return
 			;;
 		id)
-			__docker_complete_stacks --cur "${cur##*=}" --id
+			__balena_complete_stacks --cur "${cur##*=}" --id
 			return
 			;;
 		name)
-			__docker_complete_stacks --cur "${cur##*=}" --name
+			__balena_complete_stacks --cur "${cur##*=}" --name
 			return
 			;;
 	esac
@@ -4354,7 +4354,7 @@ _docker_stack_ps() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -S = -W "id name desired-state" -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--format)
@@ -4367,40 +4367,40 @@ _docker_stack_ps() {
 			COMPREPLY=( $( compgen -W "--all -a --filter -f --format --help --no-resolve --no-trunc --quiet -q" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--filter|-f')
+			local counter=$(__balena_pos_first_nonflag '--filter|-f')
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_stacks
+				__balena_complete_stacks
 			fi
 			;;
 	esac
 }
 
-_docker_stack_remove() {
-	_docker_stack_rm
+_balena_stack_remove() {
+	_balena_stack_rm
 }
 
-_docker_stack_rm() {
+_balena_stack_rm() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_stacks
+			__balena_complete_stacks
 	esac
 }
 
-_docker_stack_services() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_stack_services() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		id)
-			__docker_complete_services --cur "${cur##*=}" --id
+			__balena_complete_services --cur "${cur##*=}" --id
 			return
 			;;
 		label)
 			return
 			;;
 		name)
-			__docker_complete_services --cur "${cur##*=}" --name
+			__balena_complete_services --cur "${cur##*=}" --name
 			return
 			;;
 	esac
@@ -4408,7 +4408,7 @@ _docker_stack_services() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -S = -W "id label name" -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--format)
@@ -4421,40 +4421,40 @@ _docker_stack_services() {
 			COMPREPLY=( $( compgen -W "--filter -f --format --help --quiet -q" -- "$cur" ) )
 			;;
 		*)
-			local counter=$(__docker_pos_first_nonflag '--filter|-f|--format')
+			local counter=$(__balena_pos_first_nonflag '--filter|-f|--format')
 			if [ "$cword" -eq "$counter" ]; then
-				__docker_complete_stacks
+				__balena_complete_stacks
 			fi
 			;;
 	esac
 }
 
-_docker_stack_up() {
-	_docker_stack_deploy
+_balena_stack_up() {
+	_balena_stack_deploy
 }
 
 
-_docker_start() {
-	_docker_container_start
+_balena_start() {
+	_balena_container_start
 }
 
-_docker_stats() {
-	_docker_container_stats
+_balena_stats() {
+	_balena_container_stats
 }
 
-_docker_stop() {
-	_docker_container_stop
+_balena_stop() {
+	_balena_container_stop
 }
 
 
-_docker_system() {
+_balena_system() {
 	local subcommands="
 		df
 		events
 		info
 		prune
 	"
-	__docker_subcommands "$subcommands $aliases" && return
+	__balena_subcommands "$subcommands $aliases" && return
 
 	case "$cur" in
 		-*)
@@ -4466,7 +4466,7 @@ _docker_system() {
 	esac
 }
 
-_docker_system_df() {
+_balena_system_df() {
 	case "$prev" in
 		--format)
 			return
@@ -4480,15 +4480,15 @@ _docker_system_df() {
 	esac
 }
 
-_docker_system_events() {
-	local key=$(__docker_map_key_of_current_option '-f|--filter')
+_balena_system_events() {
+	local key=$(__balena_map_key_of_current_option '-f|--filter')
 	case "$key" in
 		container)
-			__docker_complete_containers_all --cur "${cur##*=}"
+			__balena_complete_containers_all --cur "${cur##*=}"
 			return
 			;;
 		daemon)
-			local name=$(__docker_q info | sed -n 's/^\(ID\|Name\): //p')
+			local name=$(__balena_q info | sed -n 's/^\(ID\|Name\): //p')
 			COMPREPLY=( $( compgen -W "$name" -- "${cur##*=}" ) )
 			return
 			;;
@@ -4539,11 +4539,11 @@ _docker_system_events() {
 			;;
 		image)
 			cur="${cur##*=}"
-			__docker_complete_images
+			__balena_complete_images
 			return
 			;;
 		network)
-			__docker_complete_networks --cur "${cur##*=}"
+			__balena_complete_networks --cur "${cur##*=}"
 			return
 			;;
 		type)
@@ -4551,7 +4551,7 @@ _docker_system_events() {
 			return
 			;;
 		volume)
-			__docker_complete_volumes --cur "${cur##*=}"
+			__balena_complete_volumes --cur "${cur##*=}"
 			return
 			;;
 	esac
@@ -4559,7 +4559,7 @@ _docker_system_events() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -S = -W "container daemon event image label network type volume" -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--since|--until)
@@ -4574,7 +4574,7 @@ _docker_system_events() {
 	esac
 }
 
-_docker_system_info() {
+_balena_system_info() {
 	case "$prev" in
 		--format|-f)
 			return
@@ -4588,11 +4588,11 @@ _docker_system_info() {
 	esac
 }
 
-_docker_system_prune() {
+_balena_system_prune() {
 	case "$prev" in
 		--filter)
 			COMPREPLY=( $( compgen -W "label label! until" -S = -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 	esac
@@ -4605,23 +4605,23 @@ _docker_system_prune() {
 }
 
 
-_docker_tag() {
-	_docker_image_tag
+_balena_tag() {
+	_balena_image_tag
 }
 
-_docker_unpause() {
-	_docker_container_unpause
+_balena_unpause() {
+	_balena_container_unpause
 }
 
-_docker_update() {
-	_docker_container_update
+_balena_update() {
+	_balena_container_update
 }
 
-_docker_top() {
-	_docker_container_top
+_balena_top() {
+	_balena_container_top
 }
 
-_docker_version() {
+_balena_version() {
 	case "$prev" in
 		--format|-f)
 			return
@@ -4635,10 +4635,10 @@ _docker_version() {
 	esac
 }
 
-_docker_volume_create() {
+_balena_volume_create() {
 	case "$prev" in
 		--driver|-d)
-			__docker_complete_plugins_bundled --type Volume
+			__balena_complete_plugins_bundled --type Volume
 			return
 			;;
 		--label|--opt|-o)
@@ -4653,7 +4653,7 @@ _docker_volume_create() {
 	esac
 }
 
-_docker_volume_inspect() {
+_balena_volume_inspect() {
 	case "$prev" in
 		--format|-f)
 			return
@@ -4665,28 +4665,28 @@ _docker_volume_inspect() {
 			COMPREPLY=( $( compgen -W "--format -f --help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_volumes
+			__balena_complete_volumes
 			;;
 	esac
 }
 
-_docker_volume_list() {
-	_docker_volume_ls
+_balena_volume_list() {
+	_balena_volume_ls
 }
 
-_docker_volume_ls() {
-	local key=$(__docker_map_key_of_current_option '--filter|-f')
+_balena_volume_ls() {
+	local key=$(__balena_map_key_of_current_option '--filter|-f')
 	case "$key" in
 		dangling)
 			COMPREPLY=( $( compgen -W "true false" -- "${cur##*=}" ) )
 			return
 			;;
 		driver)
-			__docker_complete_plugins_bundled --cur "${cur##*=}" --type Volume
+			__balena_complete_plugins_bundled --cur "${cur##*=}" --type Volume
 			return
 			;;
 		name)
-			__docker_complete_volumes --cur "${cur##*=}"
+			__balena_complete_volumes --cur "${cur##*=}"
 			return
 			;;
 	esac
@@ -4694,7 +4694,7 @@ _docker_volume_ls() {
 	case "$prev" in
 		--filter|-f)
 			COMPREPLY=( $( compgen -S = -W "dangling driver label name" -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 		--format)
@@ -4709,11 +4709,11 @@ _docker_volume_ls() {
 	esac
 }
 
-_docker_volume_prune() {
+_balena_volume_prune() {
 	case "$prev" in
 		--filter)
 			COMPREPLY=( $( compgen -W "label label!" -S = -- "$cur" ) )
-			__docker_nospace
+			__balena_nospace
 			return
 			;;
 	esac
@@ -4725,22 +4725,22 @@ _docker_volume_prune() {
 	esac
 }
 
-_docker_volume_remove() {
-	_docker_volume_rm
+_balena_volume_remove() {
+	_balena_volume_rm
 }
 
-_docker_volume_rm() {
+_balena_volume_rm() {
 	case "$cur" in
 		-*)
 			COMPREPLY=( $( compgen -W "--force -f --help" -- "$cur" ) )
 			;;
 		*)
-			__docker_complete_volumes
+			__balena_complete_volumes
 			;;
 	esac
 }
 
-_docker_volume() {
+_balena_volume() {
 	local subcommands="
 		create
 		inspect
@@ -4752,7 +4752,7 @@ _docker_volume() {
 		list
 		remove
 	"
-	__docker_subcommands "$subcommands $aliases" && return
+	__balena_subcommands "$subcommands $aliases" && return
 
 	case "$cur" in
 		-*)
@@ -4764,11 +4764,11 @@ _docker_volume() {
 	esac
 }
 
-_docker_wait() {
-	_docker_container_wait
+_balena_wait() {
+	_balena_container_wait
 }
 
-_docker() {
+_balena() {
 	local previous_extglob_setting=$(shopt -p extglob)
 	shopt -s extglob
 
@@ -4839,10 +4839,10 @@ _docker() {
 	)
 
 	local commands=(${management_commands[*]} ${top_level_commands[*]})
-	[ -z "$DOCKER_HIDE_LEGACY_COMMANDS" ] && commands+=(${legacy_commands[*]})
+	[ -z "$BALENA_HIDE_LEGACY_COMMANDS" ] && commands+=(${legacy_commands[*]})
 
 	# These options are valid as global options for all client commands
-	# and valid as command options for `docker daemon`
+	# and valid as command options for `balena daemon`
 	local global_boolean_options="
 		--debug -D
 		--tls
@@ -4863,7 +4863,7 @@ _docker() {
 	local cur prev words cword
 	_get_comp_words_by_ref -n : cur prev words cword
 
-	local command='docker' command_pos=0 subcommand_pos
+	local command='balena' command_pos=0 subcommand_pos
 	local counter=1
 	while [ "$counter" -lt "$cword" ]; do
 		case "${words[$counter]}" in
@@ -4877,7 +4877,7 @@ _docker() {
 				(( counter++ ))
 				config="${words[$counter]}"
 				;;
-			$(__docker_to_extglob "$global_options_with_args") )
+			$(__balena_to_extglob "$global_options_with_args") )
 				(( counter++ ))
 				;;
 			-*)
@@ -4895,21 +4895,21 @@ _docker() {
 	done
 
 	local binary="${words[0]}"
-	if [[ $binary == ?(*/)dockerd ]] ; then
-		# for the dockerd binary, we reuse completion of `docker daemon`.
-		# dockerd does not have subcommands and global options.
+	if [[ $binary == ?(*/)balenad ]] ; then
+		# for the balenad binary, we reuse completion of `balena daemon`.
+		# balenad does not have subcommands and global options.
 		command=daemon
 		command_pos=0
 	fi
 
-	local completions_func=_docker_${command//-/_}
+	local completions_func=_balena_${command//-/_}
 	declare -F $completions_func >/dev/null && $completions_func
 
 	eval "$previous_extglob_setting"
 	return 0
 }
 
-eval "$__docker_previous_extglob_setting"
-unset __docker_previous_extglob_setting
+eval "$__balena_previous_extglob_setting"
+unset __balena_previous_extglob_setting
 
-complete -F _docker docker docker.exe dockerd dockerd.exe
+complete -F _balena balena balena.exe balenad balenad.exe
